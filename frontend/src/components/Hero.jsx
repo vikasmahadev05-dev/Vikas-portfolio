@@ -23,9 +23,9 @@ export default function Hero() {
         current.current.y = startY;
 
         const setTargetSize = () => {
-            if (window.innerWidth >= 1024) target.current.size = 150; // 300px diameter
-            else if (window.innerWidth >= 768) target.current.size = 120; // 240px
-            else target.current.size = 90; // 180px
+            if (window.innerWidth >= 1024) target.current.size = 135; // 270px diameter
+            else if (window.innerWidth >= 768) target.current.size = 108; // 216px
+            else target.current.size = 81; // 162px
         };
         
         setTargetSize();
@@ -116,6 +116,24 @@ export default function Hero() {
                 />
             </picture>
 
+            {/* Background Spider-Verse Name Overlay (Yellow) */}
+            <div className="absolute left-[2%] md:left-[5%] bottom-[2%] md:bottom-[5%] z-5 select-none pointer-events-none flex flex-col">
+                <h1 
+                    className="text-color-fill text-stroke-vikas-base font-['Anton'] text-[5.5rem] md:text-[14rem] lg:text-[18rem] leading-none tracking-normal"
+                >
+                    VIKAS
+                </h1>
+                <h2 
+                    className="relative z-10 text-yellow-400 font-['Anton'] text-base md:text-2xl lg:text-4xl leading-normal md:leading-none tracking-[0.2em] self-start ml-2 md:ml-6 lg:ml-8 -mt-1 md:-mt-2 lg:-mt-3 whitespace-nowrap pr-2"
+                    style={{
+                        WebkitTextStroke: '1px black',
+                        textShadow: '3px 0px 0px rgba(0,0,0,0.8)',
+                    }}
+                >
+                    WEB DEVELOPER
+                </h2>
+            </div>
+
             {/* SVG Clip Path Definition for the Spiky Web Shape */}
             <svg width="0" height="0" className="absolute">
                 <defs>
@@ -157,19 +175,42 @@ export default function Hero() {
                     objectFit: window.innerWidth < 768 ? 'cover' : 'fill',
                 }}
             >
-                <picture>
-                    <source media="(max-width: 767px)" srcSet={mobHeroColor} />
-                    <img 
-                        src={heroColor} 
-                        alt="Vibrant world" 
-                        className="absolute left-0 top-0 max-w-none object-cover md:object-fill object-center"
-                        style={{
-                            width: '100vw',
-                            height: '100dvh',
-                            transform: 'translate3d(calc(var(--size) - var(--x)), calc(var(--size) - var(--y)), 0)'
-                        }}
-                    />
-                </picture>
+                {/* Counter-transform wrapper for the entire revealed world (Image + Text) */}
+                <div
+                    className="absolute left-0 top-0"
+                    style={{
+                        width: '100vw',
+                        height: '100dvh',
+                        transform: 'translate3d(calc(var(--size) - var(--x)), calc(var(--size) - var(--y)), 0)'
+                    }}
+                >
+                    <picture>
+                        <source media="(max-width: 767px)" srcSet={mobHeroColor} />
+                        <img 
+                            src={heroColor} 
+                            alt="Vibrant world" 
+                            className="absolute inset-0 w-[100vw] h-[100dvh] max-w-none object-cover md:object-fill object-center"
+                        />
+                    </picture>
+
+                    {/* Revealed Spider-Verse Name Overlay (White) */}
+                    <div className="absolute left-[2%] md:left-[5%] bottom-[2%] md:bottom-[5%] select-none pointer-events-none flex flex-col">
+                        <h1 
+                            className="text-color-fill text-stroke-vikas-reveal font-['Anton'] text-[5.5rem] md:text-[14rem] lg:text-[18rem] leading-none tracking-normal"
+                        >
+                            VIKAS
+                        </h1>
+                        <h2 
+                            className="relative z-10 text-[#e5e5e5] font-['Anton'] text-base md:text-2xl lg:text-4xl leading-normal md:leading-none tracking-[0.2em] self-start ml-2 md:ml-6 lg:ml-8 -mt-1 md:-mt-2 lg:-mt-3 whitespace-nowrap pr-2"
+                            style={{
+                                WebkitTextStroke: '1px black',
+                                textShadow: '0 0 10px #ff0000, 0 0 20px #ff0000, 3px 0px 0px #000',
+                            }}
+                        >
+                            WEB DEVELOPER
+                        </h2>
+                    </div>
+                </div>
             </div>
 
             {/* Dynamic Web Strand (Shooting from bottom center to cursor) */}
