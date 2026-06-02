@@ -36,31 +36,31 @@ export default function Hero() {
         mousePos.current.y = startY;
 
         const setTargetSize = () => {
-            if (window.innerWidth >= 1024) target.current.size = 135; // 270px diameter
-            else if (window.innerWidth >= 768) target.current.size = 108; // 216px
-            else target.current.size = 81; // 162px
+            if (window.innerWidth >= 1024) target.current.size = 150; // Noticeably larger cursor
+            else if (window.innerWidth >= 768) target.current.size = 120;
+            else target.current.size = 90;
         };
-        
+
         setTargetSize();
         window.addEventListener('resize', setTargetSize);
 
         let startTime = null;
         const entryDuration = 800; // 0.8s
-        
+
         // custom easing cubic-bezier(0.22,1,0.36,1) approximation
-        const easeOut = (t) => 1 - Math.pow(1 - t, 4); 
+        const easeOut = (t) => 1 - Math.pow(1 - t, 4);
 
         const animate = (time) => {
             if (!startTime) startTime = time;
             const elapsed = time - startTime;
             const progress = Math.min(elapsed / entryDuration, 1);
-            
+
             // Animate entry size
             if (progress < 1) {
                 current.current.size = target.current.size * easeOut(progress);
             } else {
                 if (hoverTarget.current.isHovering) {
-                    target.current.size = window.innerWidth >= 768 ? 50 : 18;
+                    target.current.size = window.innerWidth >= 768 ? 20 : 9; // desktop 25 * 0.8
                 } else {
                     setTargetSize();
                 }
@@ -101,7 +101,7 @@ export default function Hero() {
                 containerRef.current.style.setProperty('--x', `${current.current.x}px`);
                 containerRef.current.style.setProperty('--y', `${current.current.y}px`);
                 containerRef.current.style.setProperty('--size', `${current.current.size}px`);
-                
+
                 // Dynamic Web Strand calculation
                 if (strandRef.current) {
                     const startX = containerRef.current.offsetWidth / 2;
@@ -110,7 +110,7 @@ export default function Hero() {
                     const dy = current.current.y - startY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-                    
+
                     strandRef.current.style.width = `${distance}px`;
                     strandRef.current.style.transform = `translate3d(${startX}px, ${startY}px, 0) rotate(${angle}deg)`;
                 }
@@ -192,7 +192,7 @@ export default function Hero() {
     };
 
     return (
-        <section 
+        <section
             ref={containerRef}
             className="relative w-full h-[100dvh] overflow-hidden cursor-none bg-black touch-none"
             onMouseMove={handleMouseMove}
@@ -210,9 +210,9 @@ export default function Hero() {
             }}
         >
             {/* Spider Icon Top Right */}
-            <div 
+            <div
                 ref={iconWrapperRef}
-                className="absolute top-2 right-2 md:top-7 md:right-8 z-[60] p-2 md:p-6 pointer-events-auto cursor-none flex items-center justify-center"
+                className="absolute top-1 right-1 md:top-2 md:right-3 z-[60] p-1 md:p-2 pointer-events-auto cursor-none flex items-center justify-center"
                 onMouseEnter={handleIconEnter}
                 onMouseLeave={handleIconLeave}
                 onTouchStart={(e) => {
@@ -222,35 +222,35 @@ export default function Hero() {
                 onTouchEnd={() => { hoverTarget.current.isHovering = false; setHoveredNav(null); hoveredNavRef.current = null; }}
                 onClick={() => setIsNavOpen(prev => !prev)}
             >
-                <img 
+                <img
                     ref={iconRef}
-                    src={spidyNav} 
-                    alt="Spider Logo" 
-                    className="w-12 md:w-20 lg:w-24 h-auto hover:drop-shadow-[0_0_15px_#ff0000] transition-[filter] duration-300 cursor-none"
+                    src={spidyNav}
+                    alt="Spider Logo"
+                    className="w-10 md:w-16 lg:w-20 h-auto hover:drop-shadow-[0_0_15px_#ff0000] transition-[filter] duration-300 cursor-none"
                 />
             </div>
             {/* Base Layer: Black & White Image (Responsive) */}
             <picture className="absolute inset-0 z-0">
                 <source media="(max-width: 767px)" srcSet={mobHeroBnw} />
-                <img 
-                    src={heroBnw} 
-                    alt="Monochrome world" 
+                <img
+                    src={heroBnw}
+                    alt="Monochrome world"
                     className="w-[100vw] h-[100dvh] object-cover md:object-fill object-center"
                 />
             </picture>
 
             {/* Background Spider-Verse Name Overlay (Yellow) */}
             <div className="absolute left-[2%] md:left-[5%] bottom-[2%] md:bottom-[5%] z-5 select-none pointer-events-none flex flex-col">
-                <h1 
-                    className="text-color-fill text-stroke-vikas-base font-['Anton'] text-[5.5rem] md:text-[14rem] lg:text-[18rem] leading-none tracking-normal"
+                <h1
+                    className="text-color-fill text-stroke-vikas-base font-['Anton'] text-[3rem] md:text-[6.16rem] lg:text-[7.92rem] leading-none tracking-normal"
                 >
                     VIKAS
                 </h1>
-                <h2 
-                    className="relative z-10 text-yellow-400 font-['Anton'] text-base md:text-2xl lg:text-4xl leading-normal md:leading-none tracking-[0.2em] self-start ml-2 md:ml-6 lg:ml-8 -mt-1 md:-mt-2 lg:-mt-3 whitespace-nowrap pr-2"
+                <h2
+                    className="relative z-10 text-yellow-400 font-['Anton'] text-[8.8px] md:text-[12px] lg:text-[17.6px] leading-normal md:leading-none tracking-[0.2em] self-start ml-1 md:ml-2 lg:ml-3 mt-0 md:-mt-[3px] lg:-mt-[4px] whitespace-nowrap pr-1"
                     style={{
-                        WebkitTextStroke: '1px black',
-                        textShadow: '3px 0px 0px rgba(0,0,0,0.8)',
+                        WebkitTextStroke: '0.5px black',
+                        textShadow: '1.5px 0px 0px rgba(0,0,0,0.8)',
                     }}
                 >
                     WEB DEVELOPER
@@ -287,7 +287,7 @@ export default function Hero() {
             </svg>
 
             {/* Reveal Layer: Color Image perfectly clipped to the Web Shape */}
-            <div 
+            <div
                 className="absolute left-0 top-0 z-10 pointer-events-none will-change-transform"
                 style={{
                     width: 'calc(var(--size) * 2)',
@@ -309,25 +309,25 @@ export default function Hero() {
                 >
                     <picture>
                         <source media="(max-width: 767px)" srcSet={mobHeroColor} />
-                        <img 
-                            src={heroColor} 
-                            alt="Vibrant world" 
-                            className="absolute inset-0 w-[100vw] h-[100dvh] max-w-none object-cover md:object-fill object-center"
+                        <img
+                            src={heroColor}
+                            alt="Vibrant world"
+                            className="absolute inset-0 w-[100vw] h-[100dvh] max-w-none object-cover md:object-fill object-center md:-ml-[8px]"
                         />
                     </picture>
 
                     {/* Revealed Spider-Verse Name Overlay (White) */}
                     <div className="absolute left-[2%] md:left-[5%] bottom-[2%] md:bottom-[5%] select-none pointer-events-none flex flex-col">
-                        <h1 
-                            className="text-color-fill text-stroke-vikas-reveal font-['Anton'] text-[5.5rem] md:text-[14rem] lg:text-[18rem] leading-none tracking-normal"
+                        <h1
+                            className="text-color-fill text-stroke-vikas-reveal font-['Anton'] text-[3rem] md:text-[6.16rem] lg:text-[7.92rem] leading-none tracking-normal"
                         >
                             VIKAS
                         </h1>
-                        <h2 
-                            className="relative z-10 text-[#e5e5e5] font-['Anton'] text-base md:text-2xl lg:text-4xl leading-normal md:leading-none tracking-[0.2em] self-start ml-2 md:ml-6 lg:ml-8 -mt-1 md:-mt-2 lg:-mt-3 whitespace-nowrap pr-2"
+                        <h2
+                            className="relative z-10 text-[#e5e5e5] font-['Anton'] text-[8.8px] md:text-[12px] lg:text-[17.6px] leading-normal md:leading-none tracking-[0.2em] self-start ml-1 md:ml-2 lg:ml-3 mt-0 md:-mt-[3px] lg:-mt-[4px] whitespace-nowrap pr-1"
                             style={{
-                                WebkitTextStroke: '1px black',
-                                textShadow: '0 0 10px #ff0000, 0 0 20px #ff0000, 3px 0px 0px #000',
+                                WebkitTextStroke: '0.5px black',
+                                textShadow: '0 0 5px #ff0000, 0 0 10px #ff0000, 1.5px 0px 0px #000',
                             }}
                         >
                             WEB DEVELOPER
@@ -337,7 +337,7 @@ export default function Hero() {
             </div>
 
             {/* Dynamic Web Strand (Shooting from bottom center to cursor) */}
-            <div 
+            <div
                 ref={strandRef}
                 className="absolute left-0 top-0 z-10 pointer-events-none will-change-transform"
                 style={{
@@ -349,7 +349,7 @@ export default function Hero() {
             />
 
             {/* Spider Web Cursor Inner Design (aligned with the clip) */}
-            <div 
+            <div
                 className="absolute left-0 top-0 z-20 pointer-events-none will-change-transform flex items-center justify-center"
                 style={{
                     width: 'calc(var(--size) * 2)',
@@ -362,15 +362,15 @@ export default function Hero() {
                         {Array.from({ length: 8 }).map((_, i) => {
                             const angle = (i * Math.PI * 2) / 8;
                             return (
-                                <line 
+                                <line
                                     key={`spoke-${i}`}
-                                    x1="50" y1="50" 
-                                    x2={50 + Math.cos(angle) * 50} 
-                                    y2={50 + Math.sin(angle) * 50} 
+                                    x1="50" y1="50"
+                                    x2={50 + Math.cos(angle) * 50}
+                                    y2={50 + Math.sin(angle) * 50}
                                 />
                             );
                         })}
-                        
+
                         {[15, 30, 45].map((radius, ringIdx) => {
                             let path = '';
                             for (let i = 0; i < 8; i++) {
@@ -382,7 +382,7 @@ export default function Hero() {
                                 const y2 = 50 + Math.sin(angle2) * radius;
                                 const midX = (x1 + x2) / 2;
                                 const midY = (y1 + y2) / 2;
-                                const sag = 0.85; 
+                                const sag = 0.85;
                                 const cx = 50 + (midX - 50) * sag;
                                 const cy = 50 + (midY - 50) * sag;
                                 if (i === 0) path += `M ${x1} ${y1} `;
@@ -396,21 +396,21 @@ export default function Hero() {
 
             {/* === MOBILE: Vertical Slide Nav === */}
             <div className="md:hidden absolute top-16 right-4 z-50 flex flex-col items-end gap-4 pointer-events-none">
-                {['HOME', 'EDUCATION', 'PROJECTS', 'CONTACT'].map((item, i) => (
+                {['EDUCATION', 'ABOUT-ME', 'PROJECTS', 'CONTACT'].map((item, i) => (
                     <a
                         key={item}
                         ref={el => navItemRefs.current[i] = el}
                         href={`#${item.toLowerCase()}`}
                         onClick={() => setIsNavOpen(false)}
-                        className="font-['Anton'] text-base tracking-widest whitespace-nowrap cursor-none"
+                        className="font-['Anton'] text-[8px] tracking-widest whitespace-nowrap cursor-none"
                         style={{
                             color: hoveredNav === item ? '#e5e5e5' : '#facc15',
-                            WebkitTextStroke: '1px black',
+                            WebkitTextStroke: '0.5px black',
                             textShadow: hoveredNav === item
-                                ? '0 0 10px #ff0000, 0 0 25px #ff0000, 2px 0px 0px #000'
-                                : '2px 0px 0px rgba(0,0,0,0.8)',
+                                ? '0 0 5px #ff0000, 0 0 12px #ff0000, 1px 0px 0px #000'
+                                : '1px 0px 0px rgba(0,0,0,0.8)',
                             opacity: isNavOpen ? 1 : 0,
-                            transform: isNavOpen ? 'translateY(0)' : 'translateY(-20px)',
+                            transform: isNavOpen ? 'translateY(0)' : 'translateY(-10px)',
                             transition: 'opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1), color 0.2s ease',
                             transitionDelay: isNavOpen ? `${(3 - i) * 90}ms` : `${i * 50}ms`,
                             pointerEvents: isNavOpen ? 'auto' : 'none',
@@ -422,24 +422,24 @@ export default function Hero() {
             </div>
 
             {/* === DESKTOP: Horizontal Centered Nav === */}
-            <div 
-                className="hidden md:flex absolute top-8 left-[5rem] lg:left-[6rem] right-[5rem] lg:right-[6rem] z-50 h-24 items-center overflow-hidden pointer-events-none"
+            <div
+                className="hidden md:flex absolute top-4 left-8 lg:left-10 right-8 lg:right-10 z-50 h-10 items-center overflow-hidden pointer-events-none"
             >
-                <div 
-                    className={`w-full flex justify-center items-center space-x-16 lg:space-x-24 mt-6 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${isNavOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-[150%]'}`}
+                <div
+                    className={`w-full flex justify-center items-center space-x-6 lg:space-x-10 mt-2 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${isNavOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-[150%]'}`}
                 >
-                    {['HOME', 'EDUCATION', 'PROJECTS', 'CONTACT'].map((item) => (
-                        <a 
+                    {['EDUCATION', 'ABOUT-ME', 'PROJECTS', 'CONTACT'].map((item) => (
+                        <a
                             key={item}
                             href={`#${item.toLowerCase()}`}
                             onClick={() => setIsNavOpen(false)}
-                            className="px-4 py-2 font-['Anton'] text-2xl lg:text-3xl tracking-widest whitespace-nowrap cursor-none hover:-translate-y-1 transition-transform duration-300"
+                            className="px-2 py-1 font-['Anton'] text-xs lg:text-base tracking-widest whitespace-nowrap cursor-none hover:-translate-y-0.5 transition-transform duration-300"
                             style={{
                                 color: hoveredNav === item ? '#e5e5e5' : '#facc15',
-                                WebkitTextStroke: '1px black',
+                                WebkitTextStroke: '0.5px black',
                                 textShadow: hoveredNav === item
-                                    ? '0 0 10px #ff0000, 0 0 25px #ff0000, 2px 0px 0px #000'
-                                    : '2px 0px 0px rgba(0,0,0,0.8)',
+                                    ? '0 0 5px #ff0000, 0 0 12px #ff0000, 1px 0px 0px #000'
+                                    : '1px 0px 0px rgba(0,0,0,0.8)',
                                 transition: 'color 0.2s ease',
                             }}
                             onMouseEnter={(e) => {
@@ -456,6 +456,7 @@ export default function Hero() {
                     ))}
                 </div>
             </div>
+
         </section>
     );
 }
