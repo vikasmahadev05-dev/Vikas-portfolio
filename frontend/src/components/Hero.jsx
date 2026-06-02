@@ -1,8 +1,9 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import heroBnw from '../assets/hero-bnw.png';
 import heroColor from '../assets/hero-color.png';
 import mobHeroBnw from '../assets/mob-hero-bnw.png';
 import mobHeroColor from '../assets/mob-hero-color.png';
+import spidyNav from '../assets/spidy-nav.png';
 
 const lerp = (start, end, factor) => start + (end - start) * factor;
 
@@ -11,7 +12,17 @@ export default function Hero() {
     const strandRef = useRef(null);
     const target = useRef({ x: 0, y: 0, size: 0 });
     const current = useRef({ x: 0, y: 0, size: 0 });
+    const mousePos = useRef({ x: 0, y: 0 });
+    const hoverTarget = useRef({ isHovering: false, x: 0, y: 0 });
+    const iconRef = useRef(null);
+    const iconWrapperRef = useRef(null);
+    const iconState = useRef({ currentX: 0, currentY: 0, currentScale: 1 });
     const requestRef = useRef();
+    const isTouchDevice = useRef(false);
+    const navItemRefs = useRef([]);
+    const hoveredNavRef = useRef(null);
+    const [isNavOpen, setIsNavOpen] = useState(false);
+    const [hoveredNav, setHoveredNav] = useState(null);
 
     useEffect(() => {
         // Initialize position to center of the screen
@@ -21,6 +32,8 @@ export default function Hero() {
         target.current.y = startY;
         current.current.x = startX;
         current.current.y = startY;
+        mousePos.current.x = startX;
+        mousePos.current.y = startY;
 
         const setTargetSize = () => {
             if (window.innerWidth >= 1024) target.current.size = 135; // 270px diameter
@@ -46,12 +59,43 @@ export default function Hero() {
             if (progress < 1) {
                 current.current.size = target.current.size * easeOut(progress);
             } else {
-                current.current.size = lerp(current.current.size, target.current.size, 0.1);
+                if (hoverTarget.current.isHovering) {
+                    target.current.size = window.innerWidth >= 768 ? 50 : 18;
+                } else {
+                    setTargetSize();
+                }
+                const lerpSpeed = isTouchDevice.current ? 0.22 : 0.1;
+                current.current.size = lerp(current.current.size, target.current.size, lerpSpeed);
+            }
+
+            if (hoverTarget.current.isHovering) {
+                // Elastic sticky cursor: sticks mostly to the center but wiggles slightly with mouse
+                target.current.x = hoverTarget.current.x + (mousePos.current.x - hoverTarget.current.x) * 0.15;
+                target.current.y = hoverTarget.current.y + (mousePos.current.y - hoverTarget.current.y) * 0.15;
+            } else {
+                target.current.x = mousePos.current.x;
+                target.current.y = mousePos.current.y;
             }
 
             // Smooth interpolation (lerp) for position for buttery movement
             current.current.x = lerp(current.current.x, target.current.x, 0.1);
             current.current.y = lerp(current.current.y, target.current.y, 0.1);
+
+            // Magnetic Icon physics
+            let targetIconX = 0, targetIconY = 0, targetIconScale = 1;
+            if (hoverTarget.current.isHovering) {
+                targetIconX = (mousePos.current.x - hoverTarget.current.x) * 0.3;
+                targetIconY = (mousePos.current.y - hoverTarget.current.y) * 0.3;
+                targetIconScale = 1.1; // slight pop
+            }
+
+            iconState.current.currentX = lerp(iconState.current.currentX, targetIconX, 0.15);
+            iconState.current.currentY = lerp(iconState.current.currentY, targetIconY, 0.15);
+            iconState.current.currentScale = lerp(iconState.current.currentScale, targetIconScale, 0.15);
+
+            if (iconRef.current) {
+                iconRef.current.style.transform = `translate3d(${iconState.current.currentX}px, ${iconState.current.currentY}px, 0) scale(${iconState.current.currentScale})`;
+            }
 
             if (containerRef.current) {
                 containerRef.current.style.setProperty('--x', `${current.current.x}px`);
@@ -84,13 +128,67 @@ export default function Hero() {
     }, []);
 
     const handleMouseMove = (e) => {
-        target.current.x = e.clientX;
-        target.current.y = e.clientY;
+        mousePos.current.x = e.clientX;
+        mousePos.current.y = e.clientY;
     };
 
     const handleTouchMove = (e) => {
-        target.current.x = e.touches[0].clientX;
-        target.current.y = e.touches[0].clientY;
+        isTouchDevice.current = true;
+        const x = e.touches[0].clientX;
+        const y = e.touches[0].clientY;
+        mousePos.current.x = x;
+        mousePos.current.y = y;
+        checkTouchOverElements(x, y);
+    };
+
+    const checkTouchOverElements = (x, y) => {
+        // Check spider icon wrapper
+        if (iconWrapperRef.current) {
+            const rect = iconWrapperRef.current.getBoundingClientRect();
+            if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                hoverTarget.current = { isHovering: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+                if (hoveredNavRef.current !== '__icon__') {
+                    hoveredNavRef.current = '__icon__';
+                    setHoveredNav('__icon__');
+                }
+                return;
+            }
+        }
+        // Check mobile nav items
+        let found = null;
+        navItemRefs.current.forEach((el, i) => {
+            if (!el) return;
+            const rect = el.getBoundingClientRect();
+            if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+                found = ['HOME', 'EDUCATION', 'PROJECTS', 'CONTACT'][i];
+                hoverTarget.current = { isHovering: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+            }
+        });
+        if (found) {
+            if (hoveredNavRef.current !== found) {
+                hoveredNavRef.current = found;
+                setHoveredNav(found);
+            }
+        } else {
+            if (hoveredNavRef.current !== null) {
+                hoveredNavRef.current = null;
+                setHoveredNav(null);
+                hoverTarget.current.isHovering = false;
+            }
+        }
+    };
+
+    const handleIconEnter = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        hoverTarget.current = {
+            isHovering: true,
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2
+        };
+    };
+
+    const handleIconLeave = () => {
+        hoverTarget.current.isHovering = false;
     };
 
     return (
@@ -100,12 +198,37 @@ export default function Hero() {
             onMouseMove={handleMouseMove}
             onTouchMove={handleTouchMove}
             onTouchStart={handleTouchMove}
+            onTouchEnd={() => {
+                hoverTarget.current.isHovering = false;
+                hoveredNavRef.current = null;
+                setHoveredNav(null);
+            }}
             style={{
                 '--x': '50%',
                 '--y': '50%',
                 '--size': '0px'
             }}
         >
+            {/* Spider Icon Top Right */}
+            <div 
+                ref={iconWrapperRef}
+                className="absolute top-2 right-2 md:top-7 md:right-8 z-[60] p-2 md:p-6 pointer-events-auto cursor-none flex items-center justify-center"
+                onMouseEnter={handleIconEnter}
+                onMouseLeave={handleIconLeave}
+                onTouchStart={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    hoverTarget.current = { isHovering: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+                }}
+                onTouchEnd={() => { hoverTarget.current.isHovering = false; setHoveredNav(null); hoveredNavRef.current = null; }}
+                onClick={() => setIsNavOpen(prev => !prev)}
+            >
+                <img 
+                    ref={iconRef}
+                    src={spidyNav} 
+                    alt="Spider Logo" 
+                    className="w-12 md:w-20 lg:w-24 h-auto hover:drop-shadow-[0_0_15px_#ff0000] transition-[filter] duration-300 cursor-none"
+                />
+            </div>
             {/* Base Layer: Black & White Image (Responsive) */}
             <picture className="absolute inset-0 z-0">
                 <source media="(max-width: 767px)" srcSet={mobHeroBnw} />
@@ -269,6 +392,69 @@ export default function Hero() {
                         })}
                     </g>
                 </svg>
+            </div>
+
+            {/* === MOBILE: Vertical Slide Nav === */}
+            <div className="md:hidden absolute top-16 right-4 z-50 flex flex-col items-end gap-4 pointer-events-none">
+                {['HOME', 'EDUCATION', 'PROJECTS', 'CONTACT'].map((item, i) => (
+                    <a
+                        key={item}
+                        ref={el => navItemRefs.current[i] = el}
+                        href={`#${item.toLowerCase()}`}
+                        onClick={() => setIsNavOpen(false)}
+                        className="font-['Anton'] text-base tracking-widest whitespace-nowrap cursor-none"
+                        style={{
+                            color: hoveredNav === item ? '#e5e5e5' : '#facc15',
+                            WebkitTextStroke: '1px black',
+                            textShadow: hoveredNav === item
+                                ? '0 0 10px #ff0000, 0 0 25px #ff0000, 2px 0px 0px #000'
+                                : '2px 0px 0px rgba(0,0,0,0.8)',
+                            opacity: isNavOpen ? 1 : 0,
+                            transform: isNavOpen ? 'translateY(0)' : 'translateY(-20px)',
+                            transition: 'opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1), color 0.2s ease',
+                            transitionDelay: isNavOpen ? `${(3 - i) * 90}ms` : `${i * 50}ms`,
+                            pointerEvents: isNavOpen ? 'auto' : 'none',
+                        }}
+                    >
+                        {item}
+                    </a>
+                ))}
+            </div>
+
+            {/* === DESKTOP: Horizontal Centered Nav === */}
+            <div 
+                className="hidden md:flex absolute top-8 left-[5rem] lg:left-[6rem] right-[5rem] lg:right-[6rem] z-50 h-24 items-center overflow-hidden pointer-events-none"
+            >
+                <div 
+                    className={`w-full flex justify-center items-center space-x-16 lg:space-x-24 mt-6 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${isNavOpen ? 'translate-x-0 pointer-events-auto' : 'translate-x-[150%]'}`}
+                >
+                    {['HOME', 'EDUCATION', 'PROJECTS', 'CONTACT'].map((item) => (
+                        <a 
+                            key={item}
+                            href={`#${item.toLowerCase()}`}
+                            onClick={() => setIsNavOpen(false)}
+                            className="px-4 py-2 font-['Anton'] text-2xl lg:text-3xl tracking-widest whitespace-nowrap cursor-none hover:-translate-y-1 transition-transform duration-300"
+                            style={{
+                                color: hoveredNav === item ? '#e5e5e5' : '#facc15',
+                                WebkitTextStroke: '1px black',
+                                textShadow: hoveredNav === item
+                                    ? '0 0 10px #ff0000, 0 0 25px #ff0000, 2px 0px 0px #000'
+                                    : '2px 0px 0px rgba(0,0,0,0.8)',
+                                transition: 'color 0.2s ease',
+                            }}
+                            onMouseEnter={(e) => {
+                                handleIconEnter(e);
+                                setHoveredNav(item);
+                            }}
+                            onMouseLeave={(e) => {
+                                handleIconLeave(e);
+                                setHoveredNav(null);
+                            }}
+                        >
+                            {item}
+                        </a>
+                    ))}
+                </div>
             </div>
         </section>
     );
