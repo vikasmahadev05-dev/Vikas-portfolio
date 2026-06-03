@@ -62,14 +62,24 @@ const VideoCard = ({ videoSrc, title, institution, onClick }) => {
 
     // Mobile specific auto-play and scroll-driven 3D tilt
     useEffect(() => {
-        const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.matchMedia("(hover: none)").matches;
-        if (!isMobile) return;
-
         let animationFrameId;
         const isHoveredRef = { current: false };
 
         const handleScroll = () => {
             if (!cardRef.current) return;
+
+            // Strictly enforce this behavior ONLY for mobile screens (under 768px width).
+            // This prevents touch-screen laptops/desktops from triggering mobile scroll logic!
+            if (window.innerWidth >= 768) {
+                if (isHoveredRef.current) {
+                    isHoveredRef.current = false;
+                    setIsHovered(false);
+                    if (videoRef.current) videoRef.current.pause();
+                    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+                }
+                return;
+            }
+
             const rect = cardRef.current.getBoundingClientRect();
             const viewportCenter = window.innerHeight / 2;
             const cardCenter = rect.top + rect.height / 2;
