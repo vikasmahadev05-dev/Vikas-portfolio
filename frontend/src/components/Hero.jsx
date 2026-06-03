@@ -314,11 +314,16 @@ export default function Hero() {
                 }
                 
                 /* Mobile Lens Animation (Yellow to Red) */
+                @-webkit-keyframes pulseColor {
+                    0%, 100% { fill: #facc15; }
+                    50% { fill: #ff0000; }
+                }
                 @keyframes pulseColor {
                     0%, 100% { fill: #facc15; }
                     50% { fill: #ff0000; }
                 }
                 .lens-anim {
+                    -webkit-animation: pulseColor 2s infinite;
                     animation: pulseColor 2s infinite;
                     transition: fill 0.3s;
                 }
@@ -372,7 +377,7 @@ export default function Hero() {
                 </div>
 
                 {/* Mobile Always-Visible Speech Bubble */}
-                <div className="mobile-prompt absolute top-[50%] left-[80%] -translate-y-1/2 pointer-events-none z-50 flex-row items-center animate-[bounce_2s_infinite]" style={{ filter: 'drop-shadow(4px 4px 0px rgba(0,0,0,1))' }}>
+                <div className="mobile-prompt absolute top-[50%] left-[80%] -translate-y-1/2 pointer-events-none z-50 flex-row items-center animate-bounce" style={{ filter: 'drop-shadow(4px 4px 0px rgba(0,0,0,1))', animationDuration: '2s' }}>
                     {/* Seamless Tail (pointing LEFT to the glasses) */}
                     <div className="w-4 h-4 bg-white border-b-[3px] border-l-[3px] border-black transform rotate-[45deg] translate-x-[12px] relative z-20 rounded-bl-[2px]"></div>
                     <div className="bg-white border-[3px] border-black pl-3 pr-1.5 py-1 sm:pl-5 sm:pr-3 sm:py-1.5 rounded-[1rem] relative z-10">
