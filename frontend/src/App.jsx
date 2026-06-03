@@ -16,12 +16,17 @@ function App() {
     setIsLoading(false);
   };
 
-  if (isLoading) {
-    return <Preloader onComplete={handlePreloadComplete} />;
-  }
-
   return (
-    <main className="w-full overflow-x-hidden relative">
+    <>
+      {/* Preloader overlay (with high z-index) */}
+      {isLoading && (
+        <div className="fixed inset-0 z-[99999]">
+            <Preloader onComplete={handlePreloadComplete} />
+        </div>
+      )}
+
+      {/* Main content is rendered immediately so the browser downloads all heavy videos and images in the background! */}
+      <main className={`w-full relative ${isLoading ? 'h-screen overflow-hidden' : 'overflow-x-hidden'}`}>
       {/* Global Pattern & Lighting Background */}
       <div className="fixed inset-0 z-0 bg-[#E3D4C1] pointer-events-none">
           {/* Vibrant Neon Blue & Red Ambient Lighting */}
@@ -83,6 +88,7 @@ function App() {
         <Contact />
       </div>
     </main>
+    </>
   )
 }
 

@@ -62,7 +62,7 @@ const VideoCard = ({ videoSrc, title, institution, onClick }) => {
 
     // Mobile specific auto-play and scroll-driven 3D tilt
     useEffect(() => {
-        const isMobile = window.matchMedia("(hover: none)").matches;
+        const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.matchMedia("(hover: none)").matches;
         if (!isMobile) return;
 
         let animationFrameId;

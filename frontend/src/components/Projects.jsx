@@ -15,30 +15,49 @@ const ProjectCard = ({ title, imageSrc, description, linkUrl }) => {
         offset: ["start end", "end start"]
     });
 
-    // Auto-trigger hover and physical 3D tilt on mobile devices when scrolling into view
+    // Auto-trigger hover and physical 3D tilt on mobile devices when scrolling into center of screen
     useEffect(() => {
-        const isMobile = window.matchMedia("(hover: none)").matches;
+        const isMobile = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || window.matchMedia("(hover: none)").matches;
         if (!isMobile) return;
 
-        const unsubscribe = scrollYProgress.on("change", (latest) => {
-            // Center of screen is roughly 0.5. We activate hover effects between 0.35 and 0.65
-            if (latest > 0.35 && latest < 0.65) {
-                setIsHovered(true);
+        let animationFrameId;
+        const isHoveredRef = { current: false };
+
+        const handleScroll = () => {
+            if (!cardRef.current) return;
+            const rect = cardRef.current.getBoundingClientRect();
+            const viewportCenter = window.innerHeight / 2;
+            const cardCenter = rect.top + rect.height / 2;
+            
+            // Calculate distance from center of viewport (-1 to 1)
+            const distance = (cardCenter - viewportCenter) / (window.innerHeight / 2);
+            const isNearCenter = Math.abs(distance) < 0.45; // Active zone in middle of screen
+            
+            if (isHoveredRef.current !== isNearCenter) {
+                isHoveredRef.current = isNearCenter;
+                setIsHovered(isNearCenter);
                 
-                // Calculate physical tilt based on how far past center they scrolled
-                // latest = 0.5 means center (0 tilt). latest = 0.65 means top (tilts down).
-                const tiltIntensity = (latest - 0.5) * 2; // ranges roughly -0.3 to 0.3
-                const rotateX = tiltIntensity * -15; // Max 4.5 degrees of physical tilt
-                
-                setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(0deg) scale3d(1.02, 1.02, 1.02)`);
-            } else {
-                setIsHovered(false);
-                setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+                if (isNearCenter) {
+                    setTransform(`perspective(1000px) rotateX(-5deg) rotateY(0deg) scale3d(1.02, 1.02, 1.02)`);
+                } else {
+                    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+                }
             }
-        });
-        
-        return () => unsubscribe();
-    }, [scrollYProgress]);
+        };
+
+        const onScroll = () => {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(handleScroll);
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        handleScroll(); // Initial check
+
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, []);
 
     const handleMouseMove = (e) => {
         if (!cardRef.current) return;
