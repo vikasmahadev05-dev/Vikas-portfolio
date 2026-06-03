@@ -1,51 +1,124 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
+import { useScroll } from 'framer-motion';
 import slvImg from '../assets/SLV.PNG';
 import snsImg from '../assets/SNS.PNG';
 import teamAlphaImg from '../assets/teamalpha.PNG';
 import momImg from '../assets/mom.PNG';
 
 const ProjectCard = ({ title, imageSrc, description, linkUrl }) => {
+    const cardRef = useRef(null);
+    const [transform, setTransform] = useState('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+    const [isHovered, setIsHovered] = useState(false);
+
+    const { scrollYProgress } = useScroll({
+        target: cardRef,
+        offset: ["start end", "end start"]
+    });
+
+    // Auto-trigger hover and physical 3D tilt on mobile devices when scrolling into view
+    useEffect(() => {
+        const isMobile = window.matchMedia("(hover: none)").matches;
+        if (!isMobile) return;
+
+        const unsubscribe = scrollYProgress.on("change", (latest) => {
+            // Center of screen is roughly 0.5. We activate hover effects between 0.35 and 0.65
+            if (latest > 0.35 && latest < 0.65) {
+                setIsHovered(true);
+                
+                // Calculate physical tilt based on how far past center they scrolled
+                // latest = 0.5 means center (0 tilt). latest = 0.65 means top (tilts down).
+                const tiltIntensity = (latest - 0.5) * 2; // ranges roughly -0.3 to 0.3
+                const rotateX = tiltIntensity * -15; // Max 4.5 degrees of physical tilt
+                
+                setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(0deg) scale3d(1.02, 1.02, 1.02)`);
+            } else {
+                setIsHovered(false);
+                setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+            }
+        });
+        
+        return () => unsubscribe();
+    }, [scrollYProgress]);
+
+    const handleMouseMove = (e) => {
+        if (!cardRef.current) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        // Subtle tilt for large cards
+        const rotateX = ((y - centerY) / centerY) * -4; 
+        const rotateY = ((x - centerX) / centerX) * 4;
+        setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovered(false);
+        setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+    };
+
     return (
-        <a 
-            href={linkUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex flex-col bg-[#E3D4C1] border-[3px] border-[#2C5E3B] shadow-xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 group"
+        <div 
+            className="w-full relative group cursor-pointer"
+            style={{ perspective: '2000px' }}
         >
-            
-            {/* Image Container - Natural image ratio dictates height without any cropping */}
-            <div className="w-full border-b-[3px] border-[#2C5E3B] overflow-hidden bg-white/30">
-                <img 
-                    src={imageSrc} 
-                    alt={title} 
-                    className="w-full h-auto block object-contain grayscale-[15%] group-hover:grayscale-0 transition-all duration-500 transform group-hover:scale-[1.02]"
-                />
-            </div>
-
-            {/* Content Container */}
-            <div className="p-6 md:p-10 flex flex-col group-hover:bg-[#2C5E3B]/5 transition-colors duration-300">
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 w-full">
-                    
-                    {/* Text Block */}
-                    <div className="flex flex-col w-full md:w-3/4">
-                        <h3 className="font-sans font-black text-[#1a1a1a] text-3xl md:text-5xl tracking-wide uppercase mb-3 md:mb-6">
-                            {title}
-                        </h3>
-                        <p className="text-neutral-700 font-serif italic text-base md:text-xl leading-relaxed">
-                            {description}
-                        </p>
-                    </div>
-                    
-                    {/* Visit Link Button - Full width on mobile, auto on desktop */}
-                    <div className="group/btn relative overflow-hidden inline-flex items-center justify-center gap-3 text-[#1a1a1a] hover:text-[#E3D4C1] font-sans font-black tracking-widest uppercase border-[3px] border-[#1a1a1a] px-6 py-4 md:py-3 rounded-full transition-colors duration-500 w-full md:w-fit shrink-0 z-10 bg-transparent mt-2 md:mt-0">
-                        <div className="absolute inset-0 bg-[#2C5E3B] translate-y-full group-hover/btn:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.85,0,0.15,1)] z-[-1]"></div>
-                        VISIT APP <span className="text-xl leading-none transform group-hover/btn:translate-x-1 transition-transform duration-500">→</span>
-                    </div>
-
+            <a 
+                ref={cardRef}
+                href={linkUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onMouseMove={handleMouseMove}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={handleMouseLeave}
+                className={`flex flex-col bg-[#E3D4C1] transition-all duration-300 ease-out border-[3px] border-black overflow-hidden ${isHovered ? 'shadow-[-10px_10px_30px_rgba(0,85,255,0.4),10px_10px_30px_rgba(255,0,0,0.4)] md:shadow-[-20px_20px_50px_rgba(0,85,255,0.4),20px_20px_50px_rgba(255,0,0,0.4)]' : 'shadow-[4px_4px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_rgba(0,0,0,1)]'}`}
+                style={{ 
+                    transform, 
+                    transformStyle: 'preserve-3d'
+                }}
+            >
+                {/* Image Container */}
+                <div className="w-full overflow-hidden bg-[#1a1a1a] border-b-[3px] border-black relative">
+                    <img 
+                        src={imageSrc} 
+                        alt={title} 
+                        className={`w-full h-auto block object-contain transition-all duration-700 transform ${isHovered ? 'grayscale-0 scale-[1.03]' : 'grayscale-[60%] scale-100'}`}
+                    />
+                    {/* Comic Book Halftone Overlay */}
+                    <div 
+                        className={`absolute inset-0 transition-opacity duration-500 pointer-events-none mix-blend-multiply ${isHovered ? 'opacity-0' : 'opacity-[0.5]'}`}
+                        style={{
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='5' height='5' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2.5' cy='2.5' r='1.5' fill='%23000000'/%3E%3C/svg%3E")`,
+                            backgroundSize: '5px 5px'
+                        }}
+                    />
+                    {/* Subtle scanline overlay on image for cinematic feel */}
+                    <div className={`absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.15)_50%,transparent_50%)] bg-[length:100%_4px] pointer-events-none transition-opacity duration-500 ${isHovered ? 'opacity-10' : 'opacity-50'}`}></div>
                 </div>
-            </div>
 
-        </a>
+                {/* Content Container */}
+                <div 
+                    className="p-6 md:p-10 flex flex-col transition-colors duration-300 bg-[#E3D4C1]"
+                    style={{ transform: 'translateZ(30px)' }} // Slight 3D pop for text
+                >
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 w-full">
+                        <div className="flex flex-col w-full md:w-3/4">
+                            <h3 className="font-sans font-black text-black text-3xl md:text-5xl tracking-wide uppercase mb-3 md:mb-6">
+                                {title}
+                            </h3>
+                            <p className="text-black font-sans font-black text-sm md:text-lg leading-relaxed uppercase tracking-widest">
+                                {description}
+                            </p>
+                        </div>
+                        
+                        <div className={`relative overflow-hidden inline-flex items-center justify-center gap-3 font-sans font-black tracking-widest uppercase border-[3px] border-black px-6 py-4 md:py-3 rounded-full transition-all duration-500 w-full md:w-fit shrink-0 z-10 mt-2 md:mt-0 ${isHovered ? 'text-white shadow-[0px_0px_0px_#000] translate-y-[4px] translate-x-[4px]' : 'text-black bg-transparent shadow-[4px_4px_0px_#000]'}`}>
+                            <div className={`absolute inset-0 bg-[#ff0000] transition-transform duration-500 ease-[cubic-bezier(0.85,0,0.15,1)] z-[-1] ${isHovered ? 'translate-y-0' : 'translate-y-full'}`}></div>
+                            VISIT APP <span className={`text-xl leading-none transition-transform duration-500 ${isHovered ? 'translate-x-1' : ''}`}>→</span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
     );
 };
 
@@ -78,25 +151,21 @@ export default function Projects() {
     ];
 
     return (
-        <section id="projects" className="relative w-full min-h-[100dvh] bg-[#E3D4C1] text-black px-6 md:px-16 lg:px-32 pt-4 md:pt-8 pb-32 flex flex-col justify-start">
+        <section id="projects" className="relative w-full min-h-[100dvh] bg-transparent text-black px-6 md:px-16 lg:px-32 pt-4 md:pt-8 pb-32 flex flex-col justify-start overflow-hidden">
             
-            {/* Glowing Curvy Spider Web Pattern Background */}
-            <div 
-                className="absolute inset-0 z-0 pointer-events-none opacity-80"
-                style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%2368d391' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round' fill='none' stroke-opacity='0.4'%3E%3Cpath d='M50 50 L50 10 M50 50 L90 50 M50 50 L50 90 M50 50 L10 50 M50 50 L78 22 M50 50 L78 78 M50 50 L22 78 M50 50 L22 22' /%3E%3Cpath d='M50 10 Q 62 20 78 22 Q 80 38 90 50 Q 80 62 78 78 Q 62 80 50 90 Q 38 80 22 78 Q 20 62 10 50 Q 20 38 22 22 Q 38 20 50 10' /%3E%3Cpath d='M50 20 Q 58 28 71 29 Q 72 42 80 50 Q 72 58 71 71 Q 58 72 50 80 Q 42 72 29 71 Q 28 58 20 50 Q 28 42 29 29 Q 42 28 50 20' /%3E%3Cpath d='M50 30 Q 56 35 64 36 Q 65 44 70 50 Q 65 56 64 64 Q 56 65 50 70 Q 44 65 36 64 Q 35 56 30 50 Q 35 44 36 36 Q 44 35 50 30' /%3E%3Cpath d='M50 40 Q 53 42 57 43 Q 58 47 60 50 Q 58 53 57 57 Q 53 58 50 60 Q 47 58 43 57 Q 42 53 40 50 Q 42 47 43 43 Q 47 42 50 40' /%3E%3C/g%3E%3C/svg%3E")`,
-                    backgroundSize: '180px 180px',
-                    filter: 'drop-shadow(0px 0px 4px rgba(104, 211, 145, 0.5))'
-                }}
-            ></div>
+            
 
             <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-col">
                 
-                <h1 className="text-3xl md:text-4xl lg:text-[3rem] font-bold tracking-tight text-[#1a1a1a] mb-8 md:mb-12 text-left w-full leading-none flex items-baseline flex-wrap">
-                    <span className="font-sans font-black tracking-tighter">PROJ</span>
-                    <span className="font-serif italic font-normal tracking-normal pr-1">ECTS</span>
-                    <span className="text-[#2C5E3B] font-serif">.</span>
-                </h1>
+                {/* Projects Header (Comic Style) */}
+                <div className="flex w-full mb-8 md:mb-12 mt-4 md:mt-8 overflow-hidden py-4 -my-4">
+                    <h1 className="relative inline-flex items-baseline bg-[#facc15] border-[3px] border-black px-4 py-2 transform -skew-x-6 rotate-[-1deg] hover-glitch cursor-crosshair animate-in slide-in-from-left-full duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+                        style={{ boxShadow: '6px 6px 0px rgba(0,0,0,1)' }}>
+                        <span className="font-sans font-black tracking-tighter text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none">PROJ</span>
+                        <span className="font-serif italic font-semibold text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none pr-1">ECTS</span>
+                        <span className="text-[#ff0000] font-serif text-2xl md:text-4xl lg:text-[3.5rem] leading-none">.</span>
+                    </h1>
+                </div>
 
                 {/* Projects List - 1 column alternating layout */}
                 <div className="w-full flex flex-col gap-12 md:gap-20 animate-in fade-in slide-in-from-bottom-8 duration-1000 mt-4 md:mt-8">

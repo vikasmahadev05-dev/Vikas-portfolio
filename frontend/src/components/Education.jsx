@@ -12,10 +12,10 @@ const DocumentViewerModal = ({ pdfUrl, title, onClose }) => {
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-300">
             {/* Modal Container */}
-            <div className="relative w-full h-[90dvh] max-w-[calc(90dvh*0.707)] mx-auto bg-[#E3D4C1] border-[3px] border-[#2C5E3B] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
+            <div className="relative w-full h-[90dvh] max-w-[calc(90dvh*0.707)] mx-auto bg-transparent border-[3px] border-[#ff0000] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300">
                 
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b-[3px] border-[#2C5E3B] bg-[#E3D4C1] z-10">
+                <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b-[3px] border-[#ff0000] bg-[#E3D4C1] z-10">
                     <h2 className="text-[#1a1a1a] font-sans font-bold text-lg md:text-2xl tracking-tight truncate pr-4">
                         {title}
                     </h2>
@@ -26,7 +26,7 @@ const DocumentViewerModal = ({ pdfUrl, title, onClose }) => {
                             href={pdfUrl} 
                             download 
                             title="Download PDF"
-                            className="p-2 md:p-2.5 bg-[#2C5E3B] text-white rounded-full hover:bg-[#1f432a] transition-all duration-300 shadow-[0_0_10px_rgba(44,94,59,0.3)] hover:shadow-[0_0_15px_rgba(44,94,59,0.6)] flex items-center justify-center transform hover:-translate-y-0.5"
+                            className="p-2 md:p-2.5 bg-[#ff0000] text-white rounded-full hover:bg-[#1f432a] transition-all duration-300 shadow-[0_0_10px_rgba(255,0,0,0.3)] hover:shadow-[0_0_15px_rgba(255,0,0,0.6)] flex items-center justify-center transform hover:-translate-y-0.5"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         </a>
@@ -34,7 +34,7 @@ const DocumentViewerModal = ({ pdfUrl, title, onClose }) => {
                         <button 
                             onClick={onClose}
                             title="Close Preview"
-                            className="p-2 md:p-2.5 border-2 border-transparent hover:border-[#2C5E3B] text-[#2C5E3B] hover:text-white hover:bg-[#2C5E3B] rounded-full transition-all duration-300 flex items-center justify-center"
+                            className="p-2 md:p-2.5 border-2 border-transparent hover:border-[#ff0000] text-[#ff0000] hover:text-white hover:bg-[#ff0000] rounded-full transition-all duration-300 flex items-center justify-center"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                         </button>
@@ -56,47 +56,85 @@ const DocumentViewerModal = ({ pdfUrl, title, onClose }) => {
 
 const VideoCard = ({ videoSrc, title, institution, onClick }) => {
     const videoRef = useRef(null);
+    const cardRef = useRef(null);
+    const [transform, setTransform] = useState('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
+    const [isHovered, setIsHovered] = useState(false);
 
-    // Mobile specific auto-play on scroll behavior
+    // Mobile specific auto-play and scroll-driven 3D tilt
     useEffect(() => {
         const isMobile = window.matchMedia("(hover: none)").matches;
-        if (!isMobile) return; // Ignore on desktop
+        if (!isMobile) return;
 
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                if (entry.isIntersecting) {
-                    if (videoRef.current) {
-                        videoRef.current.currentTime = 0;
-                        videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
-                    }
-                } else {
-                    if (videoRef.current) {
-                        videoRef.current.pause();
-                    }
+        let animationFrameId;
+        const isHoveredRef = { current: false };
+
+        const handleScroll = () => {
+            if (!cardRef.current) return;
+            const rect = cardRef.current.getBoundingClientRect();
+            const viewportCenter = window.innerHeight / 2;
+            const cardCenter = rect.top + rect.height / 2;
+            
+            // Calculate distance from center of viewport (-1 to 1)
+            const distance = (cardCenter - viewportCenter) / viewportCenter;
+            const clamped = Math.max(-1, Math.min(1, distance));
+            
+            // Tilt based on scroll! As it scrolls up, it tilts up and down
+            const rotateX = clamped * 25; 
+            const isNearCenter = Math.abs(clamped) < 0.45; // Active zone in middle of screen
+            
+            // Only update React state and video playback when entering/leaving the active zone
+            if (isHoveredRef.current !== isNearCenter) {
+                isHoveredRef.current = isNearCenter;
+                setIsHovered(isNearCenter);
+                
+                if (isNearCenter && videoRef.current) {
+                    videoRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+                } else if (!isNearCenter && videoRef.current) {
+                    videoRef.current.pause();
                 }
-            },
-            { threshold: 0.5 } // Trigger when 50% visible
-        );
+            }
+            
+            // Apply 3D transform based on scroll position
+            setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(0deg) scale3d(${isNearCenter ? 1.02 : 1}, ${isNearCenter ? 1.02 : 1}, 1)`);
+        };
 
-        if (videoRef.current) {
-            observer.observe(videoRef.current);
-        }
+        const onScroll = () => {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(handleScroll);
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        handleScroll(); // Initial check
 
         return () => {
-            if (videoRef.current) {
-                observer.unobserve(videoRef.current);
-            }
+            window.removeEventListener('scroll', onScroll);
+            cancelAnimationFrame(animationFrameId);
         };
     }, []);
 
-    const handleMouseEnter = () => {
+    const handleMouseMove = (e) => {
+        if (!cardRef.current) return;
+        const rect = cardRef.current.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -15; // Max tilt
+        const rotateY = ((x - centerX) / centerX) * 15;
+        setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`);
+    };
+
+    const handleCardMouseEnter = () => {
+        setIsHovered(true);
         if (videoRef.current) {
             videoRef.current.currentTime = 0; 
             videoRef.current.play(); 
         }
     };
 
-    const handleMouseLeave = () => {
+    const handleCardMouseLeave = () => {
+        setIsHovered(false);
+        setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
         if (videoRef.current) {
             videoRef.current.pause(); 
         }
@@ -106,35 +144,56 @@ const VideoCard = ({ videoSrc, title, institution, onClick }) => {
         <div 
             onClick={onClick}
             className="flex flex-col items-center gap-5 w-full group cursor-pointer"
+            style={{ perspective: '1000px' }}
         >
             <div
-                className="w-full aspect-square bg-transparent border-[3px] border-[#2C5E3B] rounded-[2rem] shadow-lg flex items-center justify-center transform transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl group-hover:bg-[#2C5E3B]/5 relative overflow-hidden"
-                onMouseEnter={handleMouseEnter}
-                onMouseLeave={handleMouseLeave}
+                ref={cardRef}
+                className="w-full aspect-square flex items-center justify-center transform transition-transform duration-200 ease-out relative overflow-visible"
+                style={{ transform, transformStyle: 'preserve-3d' }}
+                onMouseMove={handleMouseMove}
+                onMouseEnter={handleCardMouseEnter}
+                onMouseLeave={handleCardMouseLeave}
             >
-                <video 
-                    ref={videoRef}
-                    src={`${videoSrc}#t=0.001`} 
-                    className="w-full h-full object-cover rounded-[1.75rem]"
-                    muted
-                    playsInline
-                    preload="metadata"
-                />
+                {/* 3D Floating Video Container with Comic Style */}
+                <div 
+                    className={`absolute inset-0 transition-all duration-300 ease-out rounded-[1.75rem] border-[3px] border-black bg-black ${isHovered ? 'shadow-[-10px_0_30px_rgba(0,85,255,0.8),10px_0_30px_rgba(255,0,0,0.8)] md:shadow-[-30px_0_60px_rgba(0,85,255,0.8),30px_0_60px_rgba(255,0,0,0.8)]' : 'shadow-[4px_4px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_rgba(0,0,0,1)]'}`}
+                    style={{ 
+                        transform: 'translateZ(30px)', 
+                        transformStyle: 'preserve-3d'
+                    }}
+                >
+                    <video 
+                        ref={videoRef}
+                        src={videoSrc} 
+                        className="w-full h-full object-cover rounded-[1.75rem]"
+                        muted
+                        playsInline
+                        loop
+                        preload="metadata"
+                    />
+                </div>
                 
-                {/* 'View' Label Overlay */}
-                <span className="absolute bottom-5 left-6 text-[#2C5E3B] font-serif italic text-sm md:text-base tracking-wide drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)] z-10 pointer-events-none flex items-center gap-1 group-hover:underline">
+                {/* 'View' Label Overlay popping out further */}
+                <span 
+                    className="absolute bottom-6 left-8 text-black font-sans font-black uppercase text-sm md:text-base tracking-widest drop-shadow-[0_2px_10px_rgba(255,255,255,0.6)] z-10 pointer-events-none flex items-center gap-2 group-hover:underline transition-transform duration-200 ease-out"
+                    style={{ transform: 'translateZ(80px)' }}
+                >
                     view --&gt;
                 </span>
             </div>
             
-            {/* Stylish Labels */}
-            <div className="flex flex-col items-center text-center transition-all duration-300 transform group-hover:-translate-y-1">
-                <h3 className="text-black font-sans font-bold text-2xl md:text-3xl tracking-wide opacity-90 group-hover:opacity-100">
-                    {title}
-                </h3>
-                <p className="text-neutral-600 font-serif italic text-sm md:text-base tracking-wide mt-1 opacity-80 group-hover:opacity-100">
-                    {institution}
-                </p>
+            {/* Comic Style Labels */}
+            <div className="flex flex-col items-center text-center transition-all duration-300 transform group-hover:-translate-y-2 mt-4 z-20">
+                <div className="bg-[#facc15] border-[3px] border-black px-4 py-1 shadow-[4px_4px_0_rgba(0,0,0,1)] transform -skew-x-6 group-hover:bg-[#ff0000] transition-colors duration-300">
+                    <h3 className="text-black font-sans font-black text-xl md:text-2xl tracking-widest uppercase group-hover:text-white transition-colors duration-300">
+                        {title}
+                    </h3>
+                </div>
+                <div className="bg-white border-[2.5px] border-black px-4 py-1 shadow-[3px_3px_0_rgba(0,0,0,1)] mt-3 transform rotate-1 group-hover:rotate-0 group-hover:shadow-[4px_4px_0_rgba(0,0,0,1)] transition-all duration-300">
+                    <p className="text-black font-sans font-bold text-[10px] md:text-xs tracking-[0.2em] uppercase">
+                        {institution}
+                    </p>
+                </div>
             </div>
         </div>
     );
@@ -157,26 +216,21 @@ export default function Education() {
     };
 
     return (
-        <section id="education" className="relative w-full min-h-[100dvh] bg-[#E3D4C1] text-black px-6 md:px-16 lg:px-32 py-32 flex flex-col justify-center">
+        <section id="education" className="relative w-full min-h-[100dvh] bg-transparent text-black px-6 md:px-16 lg:px-32 py-32 flex flex-col justify-center overflow-hidden">
             
-            {/* Glowing Curvy Spider Web Pattern Background */}
-            <div 
-                className="absolute inset-0 z-0 pointer-events-none opacity-80"
-                style={{
-                    backgroundImage: `url("data:image/svg+xml,%3Csvg width='180' height='180' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg stroke='%2368d391' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round' fill='none' stroke-opacity='0.4'%3E%3Cpath d='M50 50 L50 10 M50 50 L90 50 M50 50 L50 90 M50 50 L10 50 M50 50 L78 22 M50 50 L78 78 M50 50 L22 78 M50 50 L22 22' /%3E%3Cpath d='M50 10 Q 62 20 78 22 Q 80 38 90 50 Q 80 62 78 78 Q 62 80 50 90 Q 38 80 22 78 Q 20 62 10 50 Q 20 38 22 22 Q 38 20 50 10' /%3E%3Cpath d='M50 20 Q 58 28 71 29 Q 72 42 80 50 Q 72 58 71 71 Q 58 72 50 80 Q 42 72 29 71 Q 28 58 20 50 Q 28 42 29 29 Q 42 28 50 20' /%3E%3Cpath d='M50 30 Q 56 35 64 36 Q 65 44 70 50 Q 65 56 64 64 Q 56 65 50 70 Q 44 65 36 64 Q 35 56 30 50 Q 35 44 36 36 Q 44 35 50 30' /%3E%3Cpath d='M50 40 Q 53 42 57 43 Q 58 47 60 50 Q 58 53 57 57 Q 53 58 50 60 Q 47 58 43 57 Q 42 53 40 50 Q 42 47 43 43 Q 47 42 50 40' /%3E%3C/g%3E%3C/svg%3E")`,
-                    backgroundSize: '180px 180px',
-                    filter: 'drop-shadow(0px 0px 4px rgba(104, 211, 145, 0.5))'
-                }}
-            ></div>
+            
 
             <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-col -mt-16 md:-mt-24">
                 
-                {/* Main Heading */}
-                <h1 className="text-xl md:text-4xl lg:text-[3rem] font-bold tracking-tight text-[#1a1a1a] mb-16 text-left w-full leading-[0.95]">
-                    <span className="font-sans tracking-tight">EDU</span>
-                    <span className="font-serif italic font-normal tracking-normal pr-1">CATION</span>
-                    <span className="text-[#2C5E3B] font-serif">.</span>
-                </h1>
+                {/* Main Heading (Comic Box Style) */}
+                <div className="flex w-full mb-12 md:mb-16 overflow-hidden py-4 -my-4">
+                    <h1 className="relative inline-flex items-baseline bg-[#facc15] border-[3px] border-black px-4 py-2 transform -skew-x-6 rotate-[-1deg] hover-glitch cursor-crosshair animate-in slide-in-from-left-full duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+                        style={{ boxShadow: '6px 6px 0px rgba(0,0,0,1)' }}>
+                        <span className="font-sans font-black tracking-tighter text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none">EDU</span>
+                        <span className="font-serif italic font-semibold text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none pr-1">CATION</span>
+                        <span className="text-[#ff0000] font-serif text-2xl md:text-4xl lg:text-[3.5rem] leading-none">.</span>
+                    </h1>
+                </div>
 
                 {/* 3 Video Cards Container */}
                 <div className="relative z-20 w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">

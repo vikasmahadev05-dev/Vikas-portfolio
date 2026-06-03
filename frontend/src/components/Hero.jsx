@@ -4,8 +4,57 @@ import heroColor from '../assets/hero-color.png';
 import mobHeroBnw from '../assets/mob-hero-bnw.png';
 import mobHeroColor from '../assets/mob-hero-color.png';
 import spidyNav from '../assets/spidy-nav.png';
+import resumePdf from '../assets/Vikas M_Resume_2025.pdf';
 
 const lerp = (start, end, factor) => start + (end - start) * factor;
+
+const DocumentViewerModal = ({ pdfUrl, title, onClose }) => {
+    if (!pdfUrl) return null;
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 md:p-8 animate-in fade-in duration-300 pointer-events-auto">
+            {/* Modal Container */}
+            <div className="relative w-full h-[90dvh] max-w-[calc(90dvh*0.707)] mx-auto bg-transparent border-[3px] border-[#ff0000] rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-300 cursor-auto">
+                
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b-[3px] border-[#ff0000] bg-[#E3D4C1] z-10">
+                    <h2 className="text-[#1a1a1a] font-sans font-bold text-lg md:text-2xl tracking-tight truncate pr-4">
+                        {title}
+                    </h2>
+                    
+                    <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+                        {/* Green Download Icon Button */}
+                        <a 
+                            href={pdfUrl} 
+                            download 
+                            title="Download PDF"
+                            className="p-2 md:p-2.5 bg-[#ff0000] text-white rounded-full hover:bg-[#1f432a] transition-all duration-300 shadow-[0_0_10px_rgba(255,0,0,0.3)] hover:shadow-[0_0_15px_rgba(255,0,0,0.6)] flex items-center justify-center transform hover:-translate-y-0.5"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        </a>
+                        {/* Close Icon Button */}
+                        <button 
+                            onClick={onClose}
+                            title="Close Preview"
+                            className="p-2 md:p-2.5 border-2 border-transparent hover:border-[#ff0000] text-[#ff0000] hover:text-white hover:bg-[#ff0000] rounded-full transition-all duration-300 flex items-center justify-center"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                {/* PDF Viewer */}
+                <div className="flex-1 w-full bg-white relative">
+                    <iframe 
+                        src={`${pdfUrl}#toolbar=0`} 
+                        className="absolute inset-0 w-full h-full border-none"
+                        title={title}
+                    />
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default function Hero() {
     const containerRef = useRef(null);
@@ -23,6 +72,7 @@ export default function Hero() {
     const hoveredNavRef = useRef(null);
     const [isNavOpen, setIsNavOpen] = useState(false);
     const [hoveredNav, setHoveredNav] = useState(null);
+    const [showResume, setShowResume] = useState(false);
 
     useEffect(() => {
         // Initialize position to center of the screen
@@ -194,7 +244,7 @@ export default function Hero() {
     return (
         <section
             ref={containerRef}
-            className="relative w-full h-[100dvh] overflow-hidden cursor-none bg-black touch-none"
+            className="relative w-full h-[100dvh] overflow-hidden cursor-none bg-black"
             onMouseMove={handleMouseMove}
             onTouchMove={handleTouchMove}
             onTouchStart={handleTouchMove}
@@ -209,6 +259,13 @@ export default function Hero() {
                 '--size': '0px'
             }}
         >
+            <style>{`
+                .dynamic-container {
+                    --x: 50%;
+                    --y: 50%;
+                    --size: 0px;
+                }
+            `}</style>
             {/* Spider Icon Top Right */}
             <div
                 ref={iconWrapperRef}
@@ -239,6 +296,119 @@ export default function Hero() {
                 />
             </picture>
 
+            {/* Glasses Styles */}
+            <style>{`
+                .hero-glasses {
+                    top: 50.6%;
+                    left: 49.6%;
+                    width: 35.5vw;
+                }
+                .hero-glasses-svg { 
+                    transform: rotate(-4deg); 
+                }
+                .mobile-prompt {
+                    display: flex;
+                }
+                .desktop-prompt {
+                    display: none;
+                }
+                
+                /* Mobile Lens Animation (Yellow to Red) */
+                @keyframes pulseColor {
+                    0%, 100% { fill: #facc15; }
+                    50% { fill: #ff0000; }
+                }
+                .lens-anim {
+                    animation: pulseColor 2s infinite;
+                    transition: fill 0.3s;
+                }
+                
+                @media (min-width: 768px) {
+                    .hero-glasses {
+                        top: 40.5%;
+                        left: 51.6%;
+                        width: 22.5vw;
+                    }
+                    .hero-glasses-svg { 
+                        transform: rotate(-6deg); 
+                    }
+                    .mobile-prompt {
+                        display: none;
+                    }
+                    .desktop-prompt {
+                        display: flex;
+                    }
+                    /* Desktop Lens Hover Effect */
+                    .lens-anim {
+                        animation: none;
+                        fill: #facc15;
+                    }
+                    .group:hover .lens-anim {
+                        fill: #ff0000;
+                    }
+                }
+            `}</style>
+
+            {/* Resume Preview Sunglasses (Worn by Vikas) */}
+            <div 
+                onClick={() => setShowResume(true)}
+                className="absolute hero-glasses -translate-x-1/2 -translate-y-1/2 z-[40] min-w-[140px] md:min-w-[auto] flex flex-col items-center justify-center pointer-events-auto cursor-none group"
+                onMouseEnter={(e) => {
+                    handleIconEnter(e);
+                    setHoveredNav('RESUME');
+                }}
+                onMouseLeave={(e) => {
+                    handleIconLeave(e);
+                    setHoveredNav(null);
+                }}
+            >
+                {/* Desktop Hover Speech Bubble */}
+                <div className="desktop-prompt absolute bottom-[90%] right-[-40px] opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-300 origin-bottom-left pointer-events-none z-50 flex-col items-start" style={{ filter: 'drop-shadow(4px 4px 0px rgba(0,0,0,1))' }}>
+                    <div className="bg-white border-[3px] border-black px-4 py-2 rounded-[1rem] relative z-10">
+                        <span className="font-sans font-black text-black text-xs tracking-widest uppercase whitespace-nowrap">View Resume!</span>
+                    </div>
+                    {/* Seamless Tail */}
+                    <div className="w-5 h-5 bg-white border-l-[3px] border-b-[3px] border-black transform rotate-[-45deg] -translate-y-[13px] translate-x-[20px] relative z-20 rounded-bl-[2px]"></div>
+                </div>
+
+                {/* Mobile Always-Visible Speech Bubble */}
+                <div className="mobile-prompt absolute top-[50%] left-[80%] -translate-y-1/2 pointer-events-none z-50 flex-row items-center animate-[bounce_2s_infinite]" style={{ filter: 'drop-shadow(4px 4px 0px rgba(0,0,0,1))' }}>
+                    {/* Seamless Tail (pointing LEFT to the glasses) */}
+                    <div className="w-4 h-4 bg-white border-b-[3px] border-l-[3px] border-black transform rotate-[45deg] translate-x-[12px] relative z-20 rounded-bl-[2px]"></div>
+                    <div className="bg-white border-[3px] border-black pl-3 pr-1.5 py-1 sm:pl-5 sm:pr-3 sm:py-1.5 rounded-[1rem] relative z-10">
+                        <span className="font-sans font-black text-black text-[8px] sm:text-[10px] tracking-widest uppercase whitespace-nowrap relative z-30">Tap Resume!</span>
+                    </div>
+                </div>
+
+                {/* Clean Comic Sunglasses ("Cooler") Icon */}
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <svg 
+                        className="w-full h-auto hero-glasses-svg group-hover:scale-105 transition-all duration-300" 
+                        viewBox="0 0 120 55" 
+                        style={{ filter: 'drop-shadow(4px 4px 0px rgba(0,0,0,0.8))' }}
+                    >
+                        {/* Bridge */}
+                        <path d="M 50 20 Q 60 15 70 20" stroke="#000" strokeWidth="6" fill="none" strokeLinecap="round" />
+                        
+                        {/* Left Frame */}
+                        <path d="M 10 15 L 50 15 L 45 42 C 35 50 15 50 10 32 Z" fill="#000" stroke="#000" strokeWidth="3" strokeLinejoin="round" />
+                        
+                        {/* Right Frame */}
+                        <path d="M 110 15 L 70 15 L 75 42 C 85 50 105 50 110 32 Z" fill="#000" stroke="#000" strokeWidth="3" strokeLinejoin="round" />
+                        
+                        {/* Left Lens */}
+                        <path d="M 16 20 L 44 20 L 40 39 C 32 44 20 44 16 29 Z" className="lens-anim" />
+                        
+                        {/* Right Lens */}
+                        <path d="M 104 20 L 76 20 L 80 39 C 88 44 100 44 104 29 Z" className="lens-anim" />
+                        
+                        {/* Gloss */}
+                        <path d="M 20 24 L 26 24 L 22 34 L 16 34 Z" fill="#fff" opacity="0.9" />
+                        <path d="M 80 24 L 86 24 L 82 34 L 76 34 Z" fill="#fff" opacity="0.9" />
+                    </svg>
+                </div>
+            </div>
+
             {/* Background Spider-Verse Name Overlay (Yellow) */}
             <div className="absolute left-[2%] md:left-[5%] bottom-[2%] md:bottom-[5%] z-5 select-none pointer-events-none flex flex-col">
                 <h1
@@ -246,15 +416,14 @@ export default function Hero() {
                 >
                     VIKAS
                 </h1>
-                <h2
-                    className="relative z-10 text-yellow-400 font-['Anton'] text-[8.8px] md:text-[12px] lg:text-[17.6px] leading-normal md:leading-none tracking-[0.2em] self-start ml-1 md:ml-2 lg:ml-3 mt-0 md:-mt-[3px] lg:-mt-[4px] whitespace-nowrap pr-1"
+                <div
+                    className="relative z-10 bg-[#facc15] border-[2.5px] border-black text-black font-['Anton'] text-[10px] md:text-[14px] lg:text-[18px] leading-none tracking-[0.15em] self-start ml-1 md:ml-2 lg:ml-3 mt-1 md:mt-0 px-2 py-1 md:px-3 md:py-1.5 whitespace-nowrap transform -skew-x-6 rotate-[-2deg]"
                     style={{
-                        WebkitTextStroke: '0.5px black',
-                        textShadow: '1.5px 0px 0px rgba(0,0,0,0.8)',
+                        boxShadow: '4px 4px 0px rgba(0,0,0,1)',
                     }}
                 >
                     WEB DEVELOPER
-                </h2>
+                </div>
             </div>
 
             {/* SVG Clip Path Definition for the Spiky Web Shape */}
@@ -323,15 +492,14 @@ export default function Hero() {
                         >
                             VIKAS
                         </h1>
-                        <h2
-                            className="relative z-10 text-[#e5e5e5] font-['Anton'] text-[8.8px] md:text-[12px] lg:text-[17.6px] leading-normal md:leading-none tracking-[0.2em] self-start ml-1 md:ml-2 lg:ml-3 mt-0 md:-mt-[3px] lg:-mt-[4px] whitespace-nowrap pr-1"
+                        <div 
+                            className="relative z-10 bg-[#e5e5e5] border-[2.5px] border-black text-black font-['Anton'] text-[10px] md:text-[14px] lg:text-[18px] leading-none tracking-[0.15em] self-start ml-1 md:ml-2 lg:ml-3 mt-1 md:mt-0 px-2 py-1 md:px-3 md:py-1.5 whitespace-nowrap transform -skew-x-6 rotate-[-2deg]"
                             style={{
-                                WebkitTextStroke: '0.5px black',
-                                textShadow: '0 0 5px #ff0000, 0 0 10px #ff0000, 1.5px 0px 0px #000',
+                                boxShadow: '-2px -2px 15px rgba(255,0,0,0.6), 6px 6px 15px rgba(0,85,255,0.6), 4px 4px 0px rgba(0,0,0,1)'
                             }}
                         >
                             WEB DEVELOPER
-                        </h2>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -350,7 +518,7 @@ export default function Hero() {
 
             {/* Spider Web Cursor Inner Design (aligned with the clip) */}
             <div
-                className="absolute left-0 top-0 z-20 pointer-events-none will-change-transform flex items-center justify-center"
+                className="absolute left-0 top-0 z-[70] pointer-events-none will-change-transform flex items-center justify-center"
                 style={{
                     width: 'calc(var(--size) * 2)',
                     height: 'calc(var(--size) * 2)',
@@ -402,16 +570,18 @@ export default function Hero() {
                         ref={el => navItemRefs.current[i] = el}
                         href={`#${item.toLowerCase()}`}
                         onClick={() => setIsNavOpen(false)}
-                        className="font-['Anton'] text-[8px] tracking-widest whitespace-nowrap cursor-none"
+                        className="px-2 py-0.5 font-['Anton'] text-[10px] tracking-widest whitespace-nowrap cursor-none border-[2px] border-black"
                         style={{
-                            color: hoveredNav === item ? '#e5e5e5' : '#facc15',
-                            WebkitTextStroke: '0.5px black',
-                            textShadow: hoveredNav === item
-                                ? '0 0 5px #ff0000, 0 0 12px #ff0000, 1px 0px 0px #000'
-                                : '1px 0px 0px rgba(0,0,0,0.8)',
+                            backgroundColor: hoveredNav === item ? '#ff0000' : '#facc15',
+                            color: hoveredNav === item ? '#fff' : '#000',
+                            boxShadow: hoveredNav === item 
+                                ? '4px 4px 0px rgba(0,0,0,1)' 
+                                : '2px 2px 0px rgba(0,0,0,1)',
                             opacity: isNavOpen ? 1 : 0,
-                            transform: isNavOpen ? 'translateY(0)' : 'translateY(-10px)',
-                            transition: 'opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1), color 0.2s ease',
+                            transform: isNavOpen 
+                                ? (hoveredNav === item ? 'translateY(0) scale(1.05) rotate(-2deg)' : 'translateY(0) scale(1) rotate(0deg)') 
+                                : 'translateY(-10px) scale(0.95)',
+                            transition: 'opacity 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1), background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease',
                             transitionDelay: isNavOpen ? `${(3 - i) * 90}ms` : `${i * 50}ms`,
                             pointerEvents: isNavOpen ? 'auto' : 'none',
                         }}
@@ -433,14 +603,15 @@ export default function Hero() {
                             key={item}
                             href={`#${item.toLowerCase()}`}
                             onClick={() => setIsNavOpen(false)}
-                            className="px-2 py-1 font-['Anton'] text-xs lg:text-base tracking-widest whitespace-nowrap cursor-none hover:-translate-y-0.5 transition-transform duration-300"
+                            className="px-2.5 py-1 font-['Anton'] text-[10px] lg:text-sm tracking-widest whitespace-nowrap cursor-none transition-all duration-300 transform origin-center border-[2.5px] border-black"
                             style={{
-                                color: hoveredNav === item ? '#e5e5e5' : '#facc15',
-                                WebkitTextStroke: '0.5px black',
-                                textShadow: hoveredNav === item
-                                    ? '0 0 5px #ff0000, 0 0 12px #ff0000, 1px 0px 0px #000'
-                                    : '1px 0px 0px rgba(0,0,0,0.8)',
-                                transition: 'color 0.2s ease',
+                                backgroundColor: hoveredNav === item ? '#ff0000' : '#facc15',
+                                color: hoveredNav === item ? '#fff' : '#000',
+                                boxShadow: hoveredNav === item 
+                                    ? '6px 6px 0px rgba(0,0,0,1)' 
+                                    : '3px 3px 0px rgba(0,0,0,1)',
+                                transition: 'background-color 0.2s ease, color 0.2s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease',
+                                transform: hoveredNav === item ? 'scale(1.1) rotate(-3deg) translateY(-4px)' : 'scale(1) rotate(0deg) translateY(0)',
                             }}
                             onMouseEnter={(e) => {
                                 handleIconEnter(e);
@@ -457,6 +628,14 @@ export default function Hero() {
                 </div>
             </div>
 
+            {/* Resume PDF Preview Modal */}
+            {showResume && (
+                <DocumentViewerModal 
+                    pdfUrl={resumePdf} 
+                    title="Vikas M - Resume" 
+                    onClose={() => setShowResume(false)} 
+                />
+            )}
         </section>
     );
 }

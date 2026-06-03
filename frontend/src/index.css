@@ -47,3 +47,48 @@ body {
     filter: drop-shadow(0 0 5.6px #ff0000) drop-shadow(0 0 12px #ff0000) drop-shadow(5.6px 0px 0px rgba(0,0,0,0.4));
   }
 }
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes spin-slow-reverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+.animate-spin-slow {
+  animation: spin-slow 4s linear infinite;
+}
+.animate-spin-slow-reverse {
+  animation: spin-slow-reverse 4s linear infinite;
+}
+
+/* Futuristic Comic Spider-Glitch Effect */
+@keyframes spider-glitch {
+  0% { transform: translate(0) skew(-6deg) rotate(-1deg); }
+  20% { transform: translate(-2px, 2px) skew(-8deg) rotate(-2deg); box-shadow: -6px 6px 0 #ff0000, 6px -6px 0 #00ffff; }
+  40% { transform: translate(2px, -2px) skew(-4deg) rotate(0deg); box-shadow: 6px -6px 0 #ff0000, -6px 6px 0 #00ffff; }
+  60% { transform: translate(-1px, -1px) skew(-7deg) rotate(-1.5deg); box-shadow: -4px 4px 0 #ff0000, 4px -4px 0 #00ffff; }
+  80% { transform: translate(1px, 1px) skew(-5deg) rotate(-0.5deg); box-shadow: 4px -4px 0 #ff0000, -4px 4px 0 #00ffff; }
+  100% { transform: translate(0) skew(-6deg) rotate(-1deg); box-shadow: 6px 6px 0px rgba(0,0,0,1); }
+}
+
+.hover-glitch {
+  transition: all 0.2s ease-out;
+}
+.hover-glitch:hover {
+  animation: spider-glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+  z-index: 50;
+}
+
+/* Infinite Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 80s linear infinite;
+}
+.animate-marquee-reverse {
+  animation: marquee 80s linear infinite reverse;
+}
