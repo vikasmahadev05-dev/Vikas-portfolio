@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent, useSpring } from 'framer-motion';
 import signatureVideo from '../assets/signature.mp4';
 
@@ -64,6 +64,18 @@ const IconLink = ({ type, hoverColor = "hover:text-[#ff0000] active:text-[#ff000
 const Contact = () => {
     const containerRef = useRef(null);
     const videoRef = useRef(null);
+    const [videoUrl, setVideoUrl] = useState(signatureVideo);
+    
+    // Force the browser to fully download the video into RAM so scrubbing is instant and doesn't require buffering
+    useEffect(() => {
+        fetch(signatureVideo)
+            .then(response => response.blob())
+            .then(blob => {
+                const url = URL.createObjectURL(blob);
+                setVideoUrl(url);
+            })
+            .catch(err => console.error("Video preload failed", err));
+    }, []);
     
     // Get scroll progress relative to this specific section entering and filling the viewport
     const { scrollYProgress } = useScroll({
@@ -71,16 +83,9 @@ const Contact = () => {
         offset: ["start end", "end end"] // Starts exactly when the section enters the bottom of the screen
     });
     
-    // Smooth out the raw scroll value with a spring physics engine for buttery smooth video scrubbing
-    const smoothProgress = useSpring(scrollYProgress, {
-        stiffness: 50,  // Softer spring gives the browser more time to decode reverse frames
-        damping: 20,
-        restDelta: 0.001
-    });
-    
-    // Scrub the video based on the smoothed scroll progress!
-    useMotionValueEvent(smoothProgress, "change", (latest) => {
-        if (videoRef.current && videoRef.current.duration) {
+    // Scrub the video instantly based on the raw scroll progress (no spring delay)
+    useMotionValueEvent(scrollYProgress, "change", (latest) => {
+        if (videoRef.current && videoRef.current.duration && !isNaN(videoRef.current.duration)) {
             requestAnimationFrame(() => {
                 if (videoRef.current) {
                     videoRef.current.currentTime = latest * videoRef.current.duration;
@@ -158,9 +163,10 @@ const Contact = () => {
                     <div className="relative w-[55vw] h-[55vw] max-w-[200px] max-h-[200px] md:max-w-none md:max-h-none md:w-96 md:h-96 border-[4px] border-black overflow-hidden shadow-[8px_8px_0_rgba(0,0,0,1)] hover:shadow-[8px_8px_0_rgba(255,0,0,1)] transition-all duration-300 cursor-pointer bg-black rounded-sm transform rotate-[-3deg] hover:rotate-0 hover:-translate-y-2 mb-6 md:mb-8 pointer-events-auto">
                         <video 
                             ref={videoRef}
-                            src={signatureVideo}
+                            src={videoUrl}
                             muted
                             playsInline
+                            preload="auto"
                             className="w-full h-full object-cover filter contrast-125 saturate-150 mix-blend-screen"
                         />
                     </div>
