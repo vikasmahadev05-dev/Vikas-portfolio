@@ -50,12 +50,12 @@ const SocialIcon = ({ type }) => {
 };
 
 const links = {
-    whatsapp: "https://wa.me/917337347118",
+    whatsapp: "https://wa.me/917337847118",
     instagram: "https://instagram.com/vikas._.16",
     linkedin: "https://www.linkedin.com/in/vikas-m-170334338/",
     github: "https://github.com/vikasmahadev05-dev",
     spidey: "#",
-    facebook: "#"
+    facebook: "https://www.facebook.com/profile.php?id=61557931726193"
 };
 
 const IconLink = ({ type, hoverColor = "hover:text-[#ff0000] active:text-[#ff0000]" }) => (
