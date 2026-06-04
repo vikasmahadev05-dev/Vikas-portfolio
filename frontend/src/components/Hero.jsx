@@ -451,7 +451,7 @@ export default function Hero() {
                 <img
                     src={heroBnw}
                     alt="Monochrome world"
-                    className="absolute inset-0 w-full h-full max-w-none object-cover object-[30%_center] md:object-contain md:object-center"
+                    className="absolute inset-0 w-full h-full max-w-none object-cover object-[30%_center] md:object-center"
                 />
             </div>
 
