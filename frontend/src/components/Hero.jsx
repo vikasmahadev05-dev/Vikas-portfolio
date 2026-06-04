@@ -414,7 +414,7 @@ export default function Hero() {
                     opacity: 1;
                 }
                 .hero-color-img {
-                    transform: translateX(87px) translateY(73px) rotate(25deg) scaleX(2.73) scaleY(3);
+                    transform: translateX(22.3vw) translateY(8.65dvh) rotate(25deg) scaleX(2.73) scaleY(3);
                 }
                 @media (min-width: 768px) {
                     .hero-color-mask {
@@ -423,7 +423,7 @@ export default function Hero() {
                         opacity: 1 !important;
                     }
                     .hero-color-img {
-                        transform: translateX(-38px) translateY(103px) rotate(26deg) scaleX(1.4) scaleY(1.49) !important;
+                        transform: translateX(-2.47vw) translateY(11.9dvh) rotate(26deg) scaleX(1.4) scaleY(1.49) !important;
                     }
                 }
             `}</style>
