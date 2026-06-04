@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import heroBnw from '../assets/hero-bnw.png';
-import heroColor from '../assets/hero-color.jpeg';
+import heroColor from '../assets/hero-color.png';
+import heroMobColor from '../assets/hero-mob-color.png';
 import spidyNav from '../assets/spidy-nav.png';
 import resumePdf from '../assets/Vikas M_Resume_2025.pdf';
 
@@ -179,12 +180,12 @@ export default function Hero() {
 
             // --- Crisp Tapering Trail Tear Logic ---
             trailHistory.current.push({ x: current.current.x, y: current.current.y, age: 0 });
-            
+
             trailHistory.current = trailHistory.current.filter(pt => {
                 pt.age += 1;
                 return pt.age < maxTrailAge;
             });
-            
+
             if (trailGroupRef.current && trailHistory.current.length > 1) {
                 let flakesHTML = '';
                 const historyLen = trailHistory.current.length;
@@ -192,16 +193,16 @@ export default function Hero() {
                     const pt = trailHistory.current[i];
                     // Progress from 0 (tail tip) to 1 (cursor head)
                     const progress = i / (historyLen - 1);
-                    
+
                     // Fire flake physics: older points scatter outwards and drift upwards slightly
                     const scatterAmount = (1 - Math.pow(progress, 0.5)) * (current.current.size * 0.8);
                     const driftX = Math.sin(pt.age * 0.3 + i) * scatterAmount;
                     const driftY = Math.cos(pt.age * 0.2 + i) * scatterAmount - (pt.age * 0.5); // float up
-                    
+
                     // Flakes shrink and fade out
                     const r = (current.current.size * 0.6) * Math.pow(progress, 1.2);
                     const opacity = progress;
-                    
+
                     if (r > 0.5) {
                         flakesHTML += `<circle cx="${pt.x + driftX}" cy="${pt.y + driftY}" r="${r}" fill="white" opacity="${opacity}" />`;
                     }
@@ -215,17 +216,17 @@ export default function Hero() {
                 let strand1 = '';
                 let strand2 = '';
                 let strand3 = '';
-                
+
                 for (let i = 0; i < historyLen; i++) {
                     const pt = trailHistory.current[i];
                     const progress = i / (historyLen - 1); // 0 (tail tip) to 1 (cursor head)
-                    
+
                     // Add slight wobble to make them look like separate strands of web fluid
                     const wobble = (1 - progress) * (current.current.size * 0.4);
-                    
+
                     const dx1 = Math.sin(pt.age * 0.5) * wobble;
                     const dy1 = Math.cos(pt.age * 0.4) * wobble;
-                    
+
                     const dx2 = Math.sin(pt.age * 0.3 + 2) * wobble;
                     const dy2 = Math.cos(pt.age * 0.6 + 2) * wobble;
 
@@ -234,7 +235,7 @@ export default function Hero() {
                     strand2 += `${prefix} ${pt.x + dx1} ${pt.y + dy1} `;
                     strand3 += `${prefix} ${pt.x + dx2} ${pt.y + dy2} `;
                 }
-                
+
                 // Draw 3 thin web strands that fade out at the tail
                 trailWebLinesRef.current.innerHTML = `
                     <path d="${strand1}" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
@@ -259,12 +260,12 @@ export default function Hero() {
                     const sag = 0.85; // Inner web scoop
                     const cx = current.current.x + (midX - current.current.x) * sag;
                     const cy = current.current.y + (midY - current.current.y) * sag;
-                    
+
                     if (i === 0) path += `M ${x1.toFixed(2)} ${y1.toFixed(2)} `;
                     path += `Q ${cx.toFixed(2)} ${cy.toFixed(2)}, ${x2.toFixed(2)} ${y2.toFixed(2)} `;
                 }
                 path += 'Z';
-                
+
                 cursorMaskRef.current.setAttribute('d', path);
             }
 
@@ -272,7 +273,7 @@ export default function Hero() {
         };
 
         requestRef.current = requestAnimationFrame(animate);
-        
+
         // Native touch listeners to allow page scroll unless grabbing the web
         const container = containerRef.current;
         if (container) {
@@ -282,14 +283,14 @@ export default function Hero() {
                 const dx = touch.clientX - current.current.x;
                 const dy = touch.clientY - current.current.y;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                
+
                 // If touch is within roughly 1.5x the cursor's size, grab the web
                 if (distance < target.current.size * 2.5) {
                     isDraggingWeb.current = true;
                 } else {
                     isDraggingWeb.current = false;
                 }
-                
+
                 // Always update initial pos so it doesn't jump
                 mousePos.current.x = touch.clientX;
                 mousePos.current.y = touch.clientY;
@@ -406,6 +407,24 @@ export default function Hero() {
                     --x: 50%;
                     --y: 50%;
                     --size: 0px;
+                }
+                .hero-color-mask {
+                    -webkit-mask: url(#tear-mask);
+                    mask: url(#tear-mask);
+                    opacity: 1;
+                }
+                .hero-color-img {
+                    transform: translateX(87px) translateY(73px) rotate(25deg) scaleX(2.73) scaleY(3);
+                }
+                @media (min-width: 768px) {
+                    .hero-color-mask {
+                        -webkit-mask: url(#tear-mask) !important;
+                        mask: url(#tear-mask) !important;
+                        opacity: 1 !important;
+                    }
+                    .hero-color-img {
+                        transform: translateX(-38px) translateY(103px) rotate(26deg) scaleX(1.4) scaleY(1.49) !important;
+                    }
                 }
             `}</style>
             {/* Spider Icon Top Right */}
@@ -588,11 +607,11 @@ export default function Hero() {
                     <mask id="tear-mask" x="0" y="0" width="100vw" height="100dvh">
                         {/* Background is black (hidden) */}
                         <rect x="0" y="0" width="100vw" height="100dvh" fill="black" />
-                        
+
                         <g filter="url(#gooey-fire)">
                             {/* The Flaking Fire Tail */}
                             <g ref={trailGroupRef}></g>
-                            
+
                             {/* Web-Shaped Head of the trail */}
                             <path ref={cursorMaskRef} d="" fill="white" />
                         </g>
@@ -602,37 +621,34 @@ export default function Hero() {
 
             {/* Reveal Layer: Color Image masked by the torn trail */}
             <div
-                className="absolute inset-0 z-10 pointer-events-none"
-                style={{
-                    WebkitMask: 'url(#tear-mask)',
-                    mask: 'url(#tear-mask)',
-                    filter: 'saturate(1.15) brightness(1.1)',
-                }}
+                className="hero-color-mask absolute inset-0 z-10 pointer-events-none"
+                style={{ filter: 'saturate(1.15) brightness(1.1)' }}
             >
                 {/* The entire revealed world (Image + Text) */}
                 <picture>
+                    <source media="(min-width: 768px)" srcSet={heroColor} />
                     <img
-                        src={heroColor}
+                        src={heroMobColor}
                         alt="Vibrant world"
-                        className="absolute inset-0 w-full h-full max-w-none object-cover object-[30%_center] md:object-center"
+                        className="hero-color-img absolute inset-0 w-full h-full max-w-none object-contain"
                     />
                 </picture>
 
                 {/* Revealed Spider-Verse Name Overlay (White) */}
                 <div className="absolute left-[6%] md:left-[5%] bottom-[2%] md:bottom-[5%] select-none pointer-events-none flex flex-col">
-                        <h1
-                            className="text-color-fill text-stroke-vikas-reveal font-['Anton'] text-[3rem] md:text-[6.16rem] lg:text-[7.92rem] leading-none tracking-normal"
-                        >
-                            VIKAS
-                        </h1>
-                        <div
-                            className="relative z-10 bg-[#e5e5e5] border-[2.5px] border-black text-black font-['Anton'] text-[10px] md:text-[14px] lg:text-[18px] leading-none tracking-[0.15em] self-start ml-1 md:ml-2 lg:ml-3 mt-1 md:mt-0 px-2 py-1 md:px-3 md:py-1.5 whitespace-nowrap transform -skew-x-6 rotate-[-2deg]"
-                            style={{
-                                boxShadow: '-2px -2px 15px rgba(255,0,0,0.6), 6px 6px 15px rgba(0,85,255,0.6), 4px 4px 0px rgba(0,0,0,1)'
-                            }}
-                        >
-                            WEB DEVELOPER
-                        </div>
+                    <h1
+                        className="text-color-fill text-stroke-vikas-reveal font-['Anton'] text-[3rem] md:text-[6.16rem] lg:text-[7.92rem] leading-none tracking-normal"
+                    >
+                        VIKAS
+                    </h1>
+                    <div
+                        className="relative z-10 bg-[#e5e5e5] border-[2.5px] border-black text-black font-['Anton'] text-[10px] md:text-[14px] lg:text-[18px] leading-none tracking-[0.15em] self-start ml-1 md:ml-2 lg:ml-3 mt-1 md:mt-0 px-2 py-1 md:px-3 md:py-1.5 whitespace-nowrap transform -skew-x-6 rotate-[-2deg]"
+                        style={{
+                            boxShadow: '-2px -2px 15px rgba(255,0,0,0.6), 6px 6px 15px rgba(0,85,255,0.6), 4px 4px 0px rgba(0,0,0,1)'
+                        }}
+                    >
+                        WEB DEVELOPER
+                    </div>
                 </div>
             </div>
 
