@@ -414,7 +414,7 @@ export default function Hero() {
                     opacity: 1;
                 }
                 .hero-color-img {
-                    transform: translateX(22.3vw) translateY(8.65dvh) rotate(25deg) scaleX(2.73) scaleY(3);
+                    transform: translateX(calc(87 * 100vw / 338)) translateY(calc(87 * 100dvh / 607)) rotate(35deg) scaleX(3.68) scaleY(3.58);
                 }
                 @media (min-width: 768px) {
                     .hero-color-mask {
@@ -423,7 +423,7 @@ export default function Hero() {
                         opacity: 1 !important;
                     }
                     .hero-color-img {
-                        transform: translateX(-2.47vw) translateY(11.9dvh) rotate(26deg) scaleX(1.4) scaleY(1.49) !important;
+                        transform: translateX(-38px) translateY(103px) rotate(26deg) scaleX(1.4) scaleY(1.49) !important;
                     }
                 }
             `}</style>
@@ -451,7 +451,7 @@ export default function Hero() {
                 <img
                     src={heroBnw}
                     alt="Monochrome world"
-                    className="absolute inset-0 w-full h-full max-w-none object-cover object-[30%_center] md:object-center"
+                    className="absolute inset-0 w-full h-full max-w-none object-cover object-[30%_center] md:object-contain md:object-center"
                 />
             </div>
 
