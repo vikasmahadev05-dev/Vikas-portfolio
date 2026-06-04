@@ -113,7 +113,7 @@ export default function Hero() {
         const setTargetSize = () => {
             if (window.innerWidth >= 1024) target.current.size = 130; // Increased to match 2cm visual size
             else if (window.innerWidth >= 768) target.current.size = 90;
-            else target.current.size = 60;
+            else target.current.size = 35; // Reduced for mobile
         };
 
         setTargetSize();
@@ -610,10 +610,24 @@ export default function Hero() {
 
                         <g filter="url(#gooey-fire)">
                             {/* The Flaking Fire Tail */}
-                            <g ref={trailGroupRef}></g>
+                            <g className="hidden md:block" ref={trailGroupRef}></g>
 
                             {/* Web-Shaped Head of the trail */}
-                            <path ref={cursorMaskRef} d="" fill="white" />
+                            <path className="hidden md:block" ref={cursorMaskRef} d="" fill="white" />
+
+                            {/* Auto Animated Webs (Mobile Only) */}
+                            <g className="md:hidden">
+                                <g transform="rotate(35)">
+                                    <rect x="-3000" y="0" width="8000" height="80" fill="white">
+                                        <animateTransform attributeName="transform" type="translate" values="0,-500; 0,1500; 0,-500" dur="10s" repeatCount="indefinite" />
+                                    </rect>
+                                </g>
+                                <g transform="rotate(-45)">
+                                    <rect x="-3000" y="0" width="8000" height="120" fill="white">
+                                        <animateTransform attributeName="transform" type="translate" values="0,1500; 0,-500; 0,1500" dur="12s" repeatCount="indefinite" />
+                                    </rect>
+                                </g>
+                            </g>
                         </g>
                     </mask>
                 </defs>
