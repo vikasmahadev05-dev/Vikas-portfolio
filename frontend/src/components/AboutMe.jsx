@@ -195,6 +195,50 @@ export default function AboutMe() {
             onScroll();
         };
 
+        // ── Mobile-only horizontal swipe ────────────────────────────────────
+        // Convert horizontal finger swipe → vertical window scroll so the
+        // existing lerp system drives the cards. Desktop is unaffected.
+        let txStart = 0, tyStart = 0, axis = null;
+
+        const onTouchStart = (e) => {
+            txStart = e.touches[0].clientX;
+            tyStart = e.touches[0].clientY;
+            axis = null;
+        };
+
+        const onTouchMove = (e) => {
+            // Only act while the sticky zone is active
+            const scrolled = -wrapper.getBoundingClientRect().top;
+            if (scrolled < 0 || scrolled > sizes.maxX) return;
+
+            const dx = e.touches[0].clientX - txStart;
+            const dy = e.touches[0].clientY - tyStart;
+
+            // Lock axis on first decisive movement
+            if (!axis) {
+                if (Math.abs(dx) > Math.abs(dy) * 1.3 && Math.abs(dx) > 8) axis = 'x';
+                else if (Math.abs(dy) > Math.abs(dx) * 1.3 && Math.abs(dy) > 8) axis = 'y';
+            }
+
+            if (axis === 'x') {
+                e.preventDefault(); // stop vertical scroll while swiping horizontally
+                // swipe left (dx < 0) → scroll down → show next card
+                // swipe right (dx > 0) → scroll up → show previous card
+                window.scrollBy(0, -dx * 1.6);
+                txStart = e.touches[0].clientX; // incremental delta
+            }
+        };
+
+        const onTouchEnd = () => { axis = null; };
+
+        // Only attach on touch-capable devices
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        if (isTouch && sticky) {
+            sticky.addEventListener('touchstart', onTouchStart, { passive: true });
+            sticky.addEventListener('touchmove',  onTouchMove,  { passive: false });
+            sticky.addEventListener('touchend',   onTouchEnd,   { passive: true });
+        }
+
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('resize', onResize, { passive: true });
 
@@ -211,6 +255,11 @@ export default function AboutMe() {
             if (rafId) cancelAnimationFrame(rafId);
             window.removeEventListener('scroll', onScroll);
             window.removeEventListener('resize', onResize);
+            if (isTouch && sticky) {
+                sticky.removeEventListener('touchstart', onTouchStart);
+                sticky.removeEventListener('touchmove',  onTouchMove);
+                sticky.removeEventListener('touchend',   onTouchEnd);
+            }
         };
     }, []);
 
@@ -280,13 +329,6 @@ export default function AboutMe() {
                     className="sticky top-0 w-full overflow-hidden"
                     style={{ height: '100vh' }}
                 >
-                    {/* Scroll hint */}
-                    <div className="absolute top-5 right-6 z-20 flex items-center gap-2 opacity-50 pointer-events-none">
-                        <span className="font-black uppercase tracking-widest text-[10px] text-black">Swipe</span>
-                        <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-                        </svg>
-                    </div>
 
                     {/* Horizontal Track — only element that moves (translateX) */}
                     <div
