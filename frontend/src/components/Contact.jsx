@@ -152,7 +152,7 @@ const Contact = () => {
     }, []);
 
     return (
-        <div ref={containerRef} className="pt-[15vh] md:pt-[25vh]">
+        <div ref={containerRef} className="pt-[2vh] md:pt-[25vh]">
         <section id="contact" className="relative w-full h-[100dvh] flex flex-col items-center justify-center overflow-hidden">
             
             {/* Background Diagonal Rollers (Icons on Desktop, Quote on Mobile) */}

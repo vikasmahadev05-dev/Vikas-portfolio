@@ -106,7 +106,7 @@ export default function Projects() {
     };
 
     return (
-        <section id="projects" className="w-full py-4 md:py-6 bg-transparent overflow-hidden font-sans relative z-10 flex flex-col items-center justify-center min-h-[100dvh]">
+        <section id="projects" className="w-full pt-4 pb-0 md:py-6 bg-transparent overflow-hidden font-sans relative z-10 flex flex-col items-center justify-center min-h-[auto] md:min-h-[100dvh]">
             
             <div className="w-full max-w-[800px] xl:max-w-[950px] mx-auto px-4 md:px-0 mb-4 md:mb-8 shrink-0 relative z-30 flex justify-center">
                 <h1 className="relative inline-flex items-baseline bg-[#facc15] border-[3px] border-black px-4 py-2 transform -skew-x-6 rotate-[-1deg] hover-glitch cursor-crosshair animate-in slide-in-from-left-full duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
@@ -249,6 +249,11 @@ export default function Projects() {
                         <svg className="w-6 h-6 lg:w-8 lg:h-8 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
                     </button>
 
+                </div>
+
+                {/* Mobile Swipe Hint */}
+                <div className="md:hidden w-full text-center opacity-60 text-[10px] font-semibold uppercase tracking-widest mt-4">
+                    swipe &rarr;
                 </div>
 
             </div>
