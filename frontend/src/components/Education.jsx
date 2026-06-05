@@ -236,9 +236,9 @@ export default function Education() {
                 <div className="flex w-full mb-12 md:mb-16 overflow-hidden py-4 -my-4">
                     <h1 className="relative inline-flex items-baseline bg-[#facc15] border-[3px] border-black px-4 py-2 transform -skew-x-6 rotate-[-1deg] hover-glitch cursor-crosshair animate-in slide-in-from-left-full duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
                         style={{ boxShadow: '6px 6px 0px rgba(0,0,0,1)' }}>
-                        <span className="font-sans font-black tracking-tighter text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none">EDU</span>
-                        <span className="font-serif italic font-semibold text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none pr-1">CATION</span>
-                        <span className="text-[#ff0000] font-serif text-2xl md:text-4xl lg:text-[3.5rem] leading-none">.</span>
+                        <span className="font-sans font-black tracking-tighter text-black text-xl md:text-3xl lg:text-5xl leading-none">EDU</span>
+                        <span className="font-serif italic font-semibold text-black text-xl md:text-3xl lg:text-5xl leading-none pr-1">CATION</span>
+                        <span className="text-[#ff0000] font-serif text-xl md:text-3xl lg:text-5xl leading-none">.</span>
                     </h1>
                 </div>
 

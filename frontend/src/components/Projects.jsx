@@ -1,154 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { useScroll } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import slvImg from '../assets/SLV.PNG';
 import snsImg from '../assets/SNS.PNG';
 import teamAlphaImg from '../assets/teamalpha.PNG';
 import momImg from '../assets/mom.PNG';
-
-const ProjectCard = ({ title, imageSrc, description, linkUrl }) => {
-    const cardRef = useRef(null);
-    const [transform, setTransform] = useState('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
-    const [isHovered, setIsHovered] = useState(false);
-
-    const { scrollYProgress } = useScroll({
-        target: cardRef,
-        offset: ["start end", "end start"]
-    });
-
-    // Auto-trigger hover and physical 3D tilt on mobile devices when scrolling into center of screen
-    useEffect(() => {
-        let animationFrameId;
-        const isHoveredRef = { current: false };
-
-        const handleScroll = () => {
-            if (!cardRef.current) return;
-
-            // Strictly enforce this behavior ONLY for mobile screens (under 768px width).
-            // This prevents touch-screen laptops/desktops from triggering mobile scroll logic!
-            if (window.innerWidth >= 768) {
-                if (isHoveredRef.current) {
-                    isHoveredRef.current = false;
-                    setIsHovered(false);
-                    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
-                }
-                return;
-            }
-
-            const rect = cardRef.current.getBoundingClientRect();
-            const viewportCenter = window.innerHeight / 2;
-            const cardCenter = rect.top + rect.height / 2;
-            
-            // Calculate distance from center of viewport (-1 to 1)
-            const distance = (cardCenter - viewportCenter) / (window.innerHeight / 2);
-            const isNearCenter = Math.abs(distance) < 0.45; // Active zone in middle of screen
-            
-            if (isHoveredRef.current !== isNearCenter) {
-                isHoveredRef.current = isNearCenter;
-                setIsHovered(isNearCenter);
-                
-                if (isNearCenter) {
-                    setTransform(`perspective(1000px) rotateX(-5deg) rotateY(0deg) scale3d(1.02, 1.02, 1.02)`);
-                } else {
-                    setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
-                }
-            }
-        };
-
-        const onScroll = () => {
-            cancelAnimationFrame(animationFrameId);
-            animationFrameId = requestAnimationFrame(handleScroll);
-        };
-
-        window.addEventListener('scroll', onScroll, { passive: true });
-        handleScroll(); // Initial check
-
-        return () => {
-            window.removeEventListener('scroll', onScroll);
-            cancelAnimationFrame(animationFrameId);
-        };
-    }, []);
-
-    const handleMouseMove = (e) => {
-        if (!cardRef.current) return;
-        const rect = cardRef.current.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-        // Subtle tilt for large cards
-        const rotateX = ((y - centerY) / centerY) * -4; 
-        const rotateY = ((x - centerX) / centerX) * 4;
-        setTransform(`perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`);
-    };
-
-    const handleMouseLeave = () => {
-        setIsHovered(false);
-        setTransform('perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)');
-    };
-
-    return (
-        <div 
-            className="w-full relative group cursor-pointer"
-            style={{ perspective: '2000px' }}
-        >
-            <a 
-                ref={cardRef}
-                href={linkUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onMouseMove={handleMouseMove}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={handleMouseLeave}
-                className={`flex flex-col bg-[#E3D4C1] transition-all duration-300 ease-out border-[3px] border-black overflow-hidden ${isHovered ? 'shadow-[-10px_10px_30px_rgba(0,85,255,0.4),10px_10px_30px_rgba(255,0,0,0.4)] md:shadow-[-20px_20px_50px_rgba(0,85,255,0.4),20px_20px_50px_rgba(255,0,0,0.4)]' : 'shadow-[4px_4px_0px_rgba(0,0,0,1)] md:shadow-[8px_8px_0px_rgba(0,0,0,1)]'}`}
-                style={{ 
-                    transform, 
-                    transformStyle: 'preserve-3d'
-                }}
-            >
-                {/* Image Container */}
-                <div className="w-full overflow-hidden bg-[#1a1a1a] border-b-[3px] border-black relative">
-                    <img 
-                        src={imageSrc} 
-                        alt={title} 
-                        className={`w-full h-auto block object-contain transition-all duration-700 transform ${isHovered ? 'grayscale-0 scale-[1.03]' : 'grayscale-[60%] scale-100'}`}
-                    />
-                    {/* Comic Book Halftone Overlay */}
-                    <div 
-                        className={`absolute inset-0 transition-opacity duration-500 pointer-events-none mix-blend-multiply ${isHovered ? 'opacity-0' : 'opacity-[0.5]'}`}
-                        style={{
-                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='5' height='5' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2.5' cy='2.5' r='1.5' fill='%23000000'/%3E%3C/svg%3E")`,
-                            backgroundSize: '5px 5px'
-                        }}
-                    />
-                    {/* Subtle scanline overlay on image for cinematic feel */}
-                    <div className={`absolute inset-0 bg-[linear-gradient(rgba(0,0,0,0.15)_50%,transparent_50%)] bg-[length:100%_4px] pointer-events-none transition-opacity duration-500 ${isHovered ? 'opacity-10' : 'opacity-50'}`}></div>
-                </div>
-
-                {/* Content Container */}
-                <div 
-                    className="p-6 md:p-10 flex flex-col transition-colors duration-300 bg-[#E3D4C1]"
-                    style={{ transform: 'translateZ(30px)' }} // Slight 3D pop for text
-                >
-                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 md:gap-8 w-full">
-                        <div className="flex flex-col w-full md:w-3/4">
-                            <h3 className="font-sans font-black text-black text-3xl md:text-5xl tracking-wide uppercase mb-3 md:mb-6">
-                                {title}
-                            </h3>
-                            <p className="text-black font-sans font-black text-sm md:text-lg leading-relaxed uppercase tracking-widest">
-                                {description}
-                            </p>
-                        </div>
-                        
-                        <div className={`relative overflow-hidden inline-flex items-center justify-center gap-3 font-sans font-black tracking-widest uppercase border-[3px] border-black px-6 py-4 md:py-3 rounded-full transition-all duration-500 w-full md:w-fit shrink-0 z-10 mt-2 md:mt-0 ${isHovered ? 'text-white shadow-[0px_0px_0px_#000] translate-y-[4px] translate-x-[4px]' : 'text-black bg-transparent shadow-[4px_4px_0px_#000]'}`}>
-                            <div className={`absolute inset-0 bg-[#ff0000] transition-transform duration-500 ease-[cubic-bezier(0.85,0,0.15,1)] z-[-1] ${isHovered ? 'translate-y-0' : 'translate-y-full'}`}></div>
-                            VISIT APP <span className={`text-xl leading-none transition-transform duration-500 ${isHovered ? 'translate-x-1' : ''}`}>→</span>
-                        </div>
-                    </div>
-                </div>
-            </a>
-        </div>
-    );
-};
 
 export default function Projects() {
     const projects = [
@@ -156,50 +11,244 @@ export default function Projects() {
             title: 'SLV',
             imageSrc: slvImg,
             description: 'An elegant e-commerce platform offering a curated collection of traditional sarees and premium dress materials.',
-            linkUrl: 'https://slv-online-stores.onrender.com'
+            linkUrl: 'https://slv-online-stores.onrender.com',
+            theme: '#ff0000', // Red
+            textOutline: 'text-[#800000]'
         },
         {
             title: 'SNS',
             imageSrc: snsImg,
-            description: 'A comprehensive interior design portal facilitating seamless style selection, catalog browsing, and secure consulting payments.',
-            linkUrl: 'https://sns-nest.onrender.com'
+            description: 'A dynamic news aggregator delivering real-time updates and breaking stories across multiple categories.',
+            linkUrl: 'https://new-web-murex.vercel.app',
+            theme: '#0055ff', // Blue
+            textOutline: 'text-[#003399]'
         },
         {
-            title: 'Team Alpha',
+            title: 'TEAM ALPHA',
             imageSrc: teamAlphaImg,
-            description: 'A professional management portal connecting clients and wedding photographers through integrated galleries, team administration, and financial tracking.',
-            linkUrl: 'https://teamalpha.photography'
+            description: 'A collaborative project management dashboard built for high-performance development teams.',
+            linkUrl: 'https://new-web-murex.vercel.app',
+            theme: '#facc15', // Yellow
+            textOutline: 'text-[#ccaa00]'
         },
         {
             title: 'MOM',
             imageSrc: momImg,
-            description: 'A sleek, intuitive daily productivity manager designed to streamline tasks and elevate your everyday workflow.',
-            linkUrl: 'https://m-o-m-00x.onrender.com'
+            description: 'A personalized recipe and meal planning application designed to bring home-cooked meals to everyone.',
+            linkUrl: 'https://new-web-murex.vercel.app',
+            theme: '#22c55e', // Green
+            textOutline: 'text-[#16803d]'
         }
     ];
 
+    const [activeIndex, setActiveIndex] = useState(0);
+    const [prevIndex, setPrevIndex] = useState(0);
+    const [direction, setDirection] = useState(1);
+    const [hasInteracted, setHasInteracted] = useState(false);
+    
+    const activeProject = projects[activeIndex];
+
+    // Auto-slide every 5 seconds until user interacts
+    useEffect(() => {
+        if (hasInteracted) return;
+
+        const interval = setInterval(() => {
+            setDirection(1);
+            setPrevIndex(activeIndex);
+            setActiveIndex((prev) => (prev + 1) % projects.length);
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, [activeIndex, hasInteracted, projects.length]);
+
+    const nextProject = () => {
+        setHasInteracted(true);
+        setDirection(1);
+        setPrevIndex(activeIndex);
+        setActiveIndex((activeIndex + 1) % projects.length);
+    };
+
+    const prevProject = () => {
+        setDirection(-1);
+        setPrevIndex(activeIndex);
+        setActiveIndex((activeIndex - 1 + projects.length) % projects.length);
+    };
+
+    // Minimal, impressive easing
+    const customEase = [0.25, 1, 0.5, 1];
+
+    // Slide variants based on direction
+    const slideVariants = {
+        enter: (dir) => ({
+            x: dir > 0 ? '100%' : '-100%',
+            opacity: 0,
+            scale: 0.95
+        }),
+        center: {
+            x: '0%',
+            opacity: 1,
+            scale: 1,
+            transition: { duration: 0.5, ease: customEase }
+        },
+        exit: (dir) => ({
+            x: dir < 0 ? '100%' : '-100%',
+            opacity: 0,
+            scale: 0.95,
+            transition: { duration: 0.5, ease: customEase }
+        })
+    };
+
+    // Background sweep variants
+    const bgVariants = {
+        enter: (dir) => ({ x: dir > 0 ? '100%' : '-100%' }),
+        center: { x: '0%', transition: { duration: 0.6, ease: customEase } },
+        exit: (dir) => ({ x: dir < 0 ? '100%' : '-100%', transition: { duration: 0.6, ease: customEase } })
+    };
+
     return (
-        <section id="projects" className="relative w-full min-h-[100dvh] bg-transparent text-black px-6 md:px-16 lg:px-32 pt-4 md:pt-8 pb-32 flex flex-col justify-start overflow-hidden">
+        <section id="projects" className="w-full py-4 md:py-6 bg-transparent overflow-hidden font-sans relative z-10 flex flex-col items-center justify-center min-h-[100dvh]">
             
-            
+            <div className="w-full max-w-[800px] xl:max-w-[950px] mx-auto px-4 md:px-0 mb-4 md:mb-8 shrink-0 relative z-30 flex justify-center">
+                <h1 className="relative inline-flex items-baseline bg-[#facc15] border-[3px] border-black px-4 py-2 transform -skew-x-6 rotate-[-1deg] hover-glitch cursor-crosshair animate-in slide-in-from-left-full duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
+                    style={{ boxShadow: '6px 6px 0px rgba(0,0,0,1)' }}>
+                    <span className="font-sans font-black tracking-tighter text-black text-xl md:text-3xl lg:text-5xl leading-none">PRO</span>
+                    <span className="font-serif italic font-semibold uppercase tracking-normal text-black text-xl md:text-3xl lg:text-5xl leading-none">JECTS</span>
+                    <span className="text-[#ff0000] font-serif text-xl md:text-3xl lg:text-5xl leading-none">.</span>
+                </h1>
+            </div>
 
-            <div className="relative z-10 max-w-6xl w-full mx-auto flex flex-col">
-                
-                {/* Projects Header (Comic Style) */}
-                <div className="flex w-full mb-8 md:mb-12 mt-4 md:mt-8 overflow-hidden py-4 -my-4">
-                    <h1 className="relative inline-flex items-baseline bg-[#facc15] border-[3px] border-black px-4 py-2 transform -skew-x-6 rotate-[-1deg] hover-glitch cursor-crosshair animate-in slide-in-from-left-full duration-700 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]"
-                        style={{ boxShadow: '6px 6px 0px rgba(0,0,0,1)' }}>
-                        <span className="font-sans font-black tracking-tighter text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none">PROJ</span>
-                        <span className="font-serif italic font-semibold text-black text-2xl md:text-4xl lg:text-[3.5rem] leading-none pr-1">ECTS</span>
-                        <span className="text-[#ff0000] font-serif text-2xl md:text-4xl lg:text-[3.5rem] leading-none">.</span>
-                    </h1>
-                </div>
+            <div className="w-full max-w-[800px] xl:max-w-[1000px] mx-auto px-2 md:px-4 flex flex-col items-center gap-3 md:gap-4 z-20">
+                <div className="w-full flex flex-row items-center justify-center gap-2 md:gap-6 lg:gap-8">
+                    
+                    {/* LEFT ARROW */}
+                    <button 
+                        onClick={prevProject}
+                        className="hidden md:flex shrink-0 w-12 h-12 lg:w-16 lg:h-16 items-center justify-center bg-[#facc15] text-black rounded-full border-[3px] border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_rgba(0,0,0,1)] hover:bg-[#ff0000] hover:text-white hover:translate-x-1 hover:translate-y-1 transition-all group z-30"
+                    >
+                        <svg className="w-6 h-6 lg:w-8 lg:h-8 transform group-hover:-translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
 
-                {/* Projects List - 1 column alternating layout */}
-                <div className="w-full flex flex-col gap-12 md:gap-20 animate-in fade-in slide-in-from-bottom-8 duration-1000 mt-4 md:mt-8">
-                    {projects.map((proj, idx) => (
-                        <ProjectCard key={idx} {...proj} isReversed={idx % 2 !== 0} />
-                    ))}
+                    {/* THE CENTER STAGE CARD */}
+                    <div 
+                        className="relative w-full flex-1 border-[2px] md:border-[3px] border-black shadow-[6px_6px_0px_rgba(0,0,0,1)] flex flex-col overflow-hidden h-[400px] md:h-[450px] lg:h-[500px]"
+                        style={{ backgroundColor: projects[prevIndex].theme }}
+                    >
+                        
+                        {/* Sliding Diagonal Swipe Transition */}
+                        <AnimatePresence custom={direction} initial={false}>
+                            <motion.div
+                                key={`swipe-${activeIndex}`}
+                                custom={direction}
+                                variants={bgVariants}
+                                initial="enter"
+                                animate="center"
+                                exit="exit"
+                                className="absolute top-[-50%] bottom-[-50%] right-[-10%] w-[65%] z-0 flex items-center justify-center"
+                            >
+                                <div className="w-full h-full transform -skew-x-[15deg] border-l-[6px] border-black relative shadow-[-10px_0_0_rgba(0,0,0,0.1)]" style={{ backgroundColor: activeProject.theme }}>
+                                    
+                                    {/* Stylized Racing Stripes / Panel Cuts */}
+                                    <div className="absolute top-0 bottom-0 -left-[20px] w-[8px] bg-black"></div>
+                                    <div className="absolute top-0 bottom-0 -left-[32px] w-[4px] bg-black"></div>
+
+                                    {/* Halftone overlay */}
+                                    <div 
+                                        className="absolute inset-0 mix-blend-multiply opacity-[0.25]" 
+                                        style={{
+                                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='5' height='5' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2.5' cy='2.5' r='1.5' fill='%23000000'/%3E%3C/svg%3E")`,
+                                            backgroundSize: '4px 4px',
+                                        }} 
+                                    />
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Minimal Background Text */}
+                        <AnimatePresence mode="wait" initial={false}>
+                            <motion.div
+                                key={`text-${activeIndex}`}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 0.2 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.3 }}
+                                className={`absolute inset-0 z-10 flex items-center justify-center pointer-events-none ${activeProject.textOutline}`}
+                            >
+                                <h2 className="font-sans font-black text-[22vw] md:text-[14vw] uppercase select-none whitespace-nowrap" style={{ WebkitTextStroke: '2px currentColor', color: 'transparent' }}>
+                                    {activeProject.title}
+                                </h2>
+                            </motion.div>
+                        </AnimatePresence>
+
+                        {/* Unified Content Layer (Z-20) - Slides as one solid block! */}
+                        <div className="relative z-20 w-full h-full overflow-hidden">
+                            <AnimatePresence custom={direction} initial={false}>
+                                <motion.div
+                                    key={`content-${activeIndex}`}
+                                    custom={direction}
+                                    variants={slideVariants}
+                                    initial="enter"
+                                    animate="center"
+                                    exit="exit"
+                                    drag="x"
+                                    dragConstraints={{ left: 0, right: 0 }}
+                                    dragElastic={0.2}
+                                    onDragEnd={(e, { offset }) => {
+                                        if (offset.x < -50) nextProject();
+                                        else if (offset.x > 50) prevProject();
+                                    }}
+                                    className="absolute inset-0 flex flex-col justify-between cursor-grab active:cursor-grabbing"
+                                >
+                                    
+                                    {/* Top Showcase Area (Tight Image Container) */}
+                                    <div className="w-full flex-1 pt-6 md:pt-10 pb-4 flex items-center justify-center min-h-0 pointer-events-none">
+                                        <div className="relative max-w-[90%] md:max-w-[80%] h-fit max-h-full bg-white p-1.5 md:p-2 border-[2px] md:border-[3px] border-black shadow-[4px_4px_0px_rgba(0,0,0,0.8)] group">
+                                            <div className="border-[2px] border-black overflow-hidden bg-white flex items-center justify-center">
+                                                <img 
+                                                    src={activeProject.imageSrc} 
+                                                    alt={activeProject.title}
+                                                    className="w-auto h-auto max-w-full max-h-[160px] md:max-h-[220px] lg:max-h-[280px] object-contain transition-transform duration-700 group-hover:scale-105"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom Info Area */}
+                                    <div className="w-full px-4 md:px-6 pb-4 md:pb-6 flex flex-col md:flex-row items-end justify-between gap-4 shrink-0">
+                                        <div className="flex-1 flex flex-col items-start gap-1.5 md:gap-2 pointer-events-none">
+                                            {/* Name brought back inside container */}
+                                            <h3 className="font-sans font-black text-black text-sm md:text-xl uppercase tracking-widest bg-white border-[2px] border-black px-3 py-1 shadow-[3px_3px_0px_rgba(0,0,0,1)]">
+                                                {activeProject.title}
+                                            </h3>
+                                            <p className="font-semibold text-black text-xs md:text-sm leading-snug bg-white border-[2px] border-black p-3 shadow-[3px_3px_0px_rgba(0,0,0,1)] max-w-[500px]">
+                                                {activeProject.description}
+                                            </p>
+                                        </div>
+
+                                        <a 
+                                            href={activeProject.linkUrl} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer" 
+                                            className="relative overflow-hidden inline-flex w-full md:w-fit items-center justify-center gap-2 font-black tracking-widest uppercase border-[2px] md:border-[3px] border-black px-5 py-2 md:py-2.5 bg-[#facc15] text-black group/btn shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[3px] hover:translate-x-[3px] transition-all duration-300 transform -skew-x-6 shrink-0"
+                                        >
+                                            <div className="absolute inset-0 transition-transform duration-300 ease-in-out z-0 -translate-y-full group-hover/btn:translate-y-0 bg-[#ff0000]"></div>
+                                            <span className={`relative z-10 transition-colors duration-300 text-[10px] md:text-xs group-hover/btn:text-white`}>VISIT APP</span> 
+                                            <span className={`relative z-10 text-sm md:text-base leading-none transition-colors duration-300 group-hover/btn:text-white`}>→</span>
+                                        </a>
+                                    </div>
+                                    
+                                </motion.div>
+                            </AnimatePresence>
+                        </div>
+                    </div>
+
+                    {/* RIGHT ARROW */}
+                    <button 
+                        onClick={nextProject}
+                        className="hidden md:flex shrink-0 w-12 h-12 lg:w-16 lg:h-16 items-center justify-center bg-[#facc15] text-black rounded-full border-[3px] border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:shadow-[0px_0px_0px_rgba(0,0,0,1)] hover:bg-[#ff0000] hover:text-white hover:-translate-x-1 hover:translate-y-1 transition-all group z-30"
+                    >
+                        <svg className="w-6 h-6 lg:w-8 lg:h-8 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                    </button>
+
                 </div>
 
             </div>

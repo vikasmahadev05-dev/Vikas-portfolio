@@ -26,7 +26,7 @@ function App() {
       )}
 
       {/* Main content is rendered immediately so the browser downloads all heavy videos and images in the background! */}
-      <main className={`w-full relative ${isLoading ? 'h-screen overflow-hidden' : 'overflow-x-hidden'}`}>
+      <main className={`w-full relative overflow-clip ${isLoading ? 'h-screen' : ''}`}>
       {/* Global Pattern & Lighting Background */}
       <div className="fixed inset-0 z-0 bg-[#E3D4C1] pointer-events-none">
           {/* Vibrant Neon Blue & Red Ambient Lighting */}
@@ -78,7 +78,7 @@ function App() {
       <div className="w-full min-h-screen relative z-10">
         <Education />
       </div>
-      <div className="w-full min-h-screen relative z-10">
+      <div className="w-full relative z-10">
         <AboutMe />
       </div>
       <div className="w-full min-h-screen relative z-10">
